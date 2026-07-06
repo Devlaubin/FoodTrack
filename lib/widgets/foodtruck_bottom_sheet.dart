@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodtruck_app/app/app_router.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 
@@ -273,6 +274,10 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
+                        Navigator.of(context).pushNamed(
+                          AppRouter.foodtruckDetail,
+                          arguments: foodtruck,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: FoodtrackColors.vertPickle,

@@ -430,6 +430,13 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
           appBar: AppBar(
             title: const Text('Radar a food'),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.list),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(AppRouter.foodtruckList);
+                },
+                tooltip: 'Liste',
+              ),
               if (auth.profile != null)
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),

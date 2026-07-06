@@ -32,53 +32,59 @@ Phase 4 — Liste + fiche détail (Menu & horaires)
     Ajouter placeholders UI pour photos (puis contenu pro).
 
 Phase 5 — Recherche & filtres utilisateur
-19) Barre de recherche (nom / ville / type).
-20) Filtres avancés progressifs:
+18) Barre de recherche (nom / ville / type).
+19) Filtres avancés progressifs:
     Distance (plus tard géolocalisation)
     cuisine/type
     ouvert maintenant
     Appliquer les filtres à Liste + carte (overlay ou panneau).
 
-Phase 6 — Géolocalisation & itinéraire GPS
-22) Activer géolocalisation temps réel.
-23) Afficher position utilisateur sur la carte.
-24) Calculer l’itinéraire vers un foodtruck (au moins deep-link Google Maps).
+Phase 6 — Côté Pro (menu, horaires, GPS temps réel)
+19) Barre de navigation en bas de l'ecran : carte, profil, et l'ecran pro pour les utilisateurs Pro.
+20) Écran Pro: gestion menu.
+21) Écran Pro: gestion horaires.
+22) Upload/gestion photos (puis stockage réel).
+23) Position GPS temps réel du pro (puis mise à jour sur la carte).
+24) Publier dans le fil d’actualité depuis compte pro.
 
-Phase 7 — Fil d’actualité “En direct du grill”
-25) Écran Fil d’Actualité (scroll vertical).
-26) Modèle Post (changement emplacement, rupture stock, édition limitée…).
-27) API: récupération posts (pagination) + création par pro (plus tard).
-28) UI posts “rapides” + micro-copies ton chaleureux.
+Phase 7 — Géolocalisation & itinéraire GPS
+25) Activer géolocalisation temps réel.
+26) Afficher position utilisateur sur la carte.
+27) Calculer l’itinéraire vers un foodtruck (au moins deep-link Google Maps).
 
-Phase 8 — Carte de fidélité numérique
-29) Écran/composant Fidélité (vieille carte cartonnée).
-30) Animation tampon rétro lors de la validation commande.
-31) Règles v1 simples (ex: 1 tampon/commande, progression jusqu’à seuil).
+Phase 8 — Avis & favoris
+28) Écran Avis (liste + détail). (Dans la barre de navigation en bas)
+29) Favoris (ajouter/retirer + liste).
+30) Tri/filtre avis (optionnel v1).
 
-Phase 9 — Notifications “Chaudes” (FCM)
-32) Intégrer Firebase Cloud Messaging (permissions, token).
-33) Micro-copies par catégorie (ex: “Gros plan sur le grill !”).
-34) Backend: endpoints pour déclencher notifications.
+Phase 10 — Fil d’actualité “En direct du grill”
+34) Écran Fil d’Actualité (scroll vertical).
+35) Modèle Post (changement emplacement, rupture stock, édition limitée…).
+36) API: récupération posts (pagination) + création par pro (plus tard).
+37) UI posts “rapides” + micro-copies ton chaleureux.
 
-Phase 10 — Avis & favoris
-35) Écran Avis (liste + détail).
-36) Favoris (ajouter/retirer + liste).
-37) Tri/filtre avis (optionnel v1).
+Phase 11 — Notifications “Chaudes” (FCM)
+38) Intégrer Firebase Cloud Messaging (permissions, token).
+39) Micro-copies par catégorie (ex: “Gros plan sur le grill !”).
+40) Backend: endpoints pour déclencher notifications.
 
-Phase 11 — Côté Pro (menu, horaires, GPS temps réel)
-38) Écran Pro: gestion menu.
-39) Écran Pro: gestion horaires.
-40) Upload/gestion photos (puis stockage réel).
-41) Position GPS temps réel du pro (puis mise à jour sur la carte).
-42) Publier dans le fil d’actualité depuis compte pro.
+Phase 12 — Carte de fidélité numérique
+41) Écran/composant Fidélité (vieille carte cartonnée).
+42) Animation tampon rétro lors de la validation commande.
+43) Règles v1 simples (ex: 1 tampon/commande, progression jusqu’à seuil).
 
-Phase 12 — Commande & paiement + API publique
-43) Écran Commande depuis la fiche foodtruck.
-44) Paiement (selon choix du projet).
-45) API publique (documentation + endpoints).
+Phase 13 — Notifications “Chaudes” (FCM)
+44) Intégrer Firebase Cloud Messaging (permissions, token).
+45) Micro-copies par catégorie (ex: “Gros plan sur le grill !”).
+46) Backend: endpoints pour déclencher notifications.
 
-Phase 13 — Tests, perf & CI
-46) Tests unitaires/widget (étendre test/widget_test.dart).
-47) Vérification contrastes sur petits écrans.
-48) Optimiser perf (notamment autour du rendu carte/markers et rebuilds; isoler avec RepaintBoundary).
-49) GitHub Actions: tests + build multi-plateformes.
+Phase 14 — Commande & paiement + API publique
+47) Écran Commande depuis la fiche foodtruck.
+48) Paiement (selon choix du projet).
+49) API publique (documentation + endpoints).
+
+Phase 15 — Tests, perf & CI
+50) Tests unitaires/widget (étendre test/widget_test.dart).
+51) Vérification contrastes sur petits écrans.
+52) Optimiser perf (notamment autour du rendu carte/markers et rebuilds; isoler avec RepaintBoundary).
+53) GitHub Actions: tests + build multi-plateformes.
