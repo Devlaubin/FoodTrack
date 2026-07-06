@@ -1,8 +1,7 @@
 class SupabaseConfig {
   SupabaseConfig._();
 
-  static const String supabaseUrl =
-      'https://fcaubjwvmwugathhpjgo.supabase.co';
+  static const String supabaseUrl = 'https://ivefhjuwquhymgwpmrbx.supabase.co';
   static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjYXViand2bXd1Z2F0aGhwamdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjE2MjcsImV4cCI6MjA5ODgzNzYyN30.En-teRvbnTPky6hyZvsUz4_-bxJAKLKupKHnrR3vMaE';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2ZWZoanV3cXVoeW1nd3BtcmJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjMwNjMsImV4cCI6MjA5ODgzOTA2M30.gX9RHXlQ98_SDc83yptVEXCZRlM9LISvE86wd_lQEyU';
 }

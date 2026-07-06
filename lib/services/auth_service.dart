@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:foodtruck_app/domain/user_profile.dart';
@@ -49,14 +51,39 @@ class AuthService extends ChangeNotifier {
     if (_user == null) return;
 
     try {
-      final response = await _supabase
-          .from('profiles')
-          .select()
-          .eq('id', _user!.id)
-          .maybeSingle();
+      // Retry logic for profile loading (in case trigger is delayed)
+      int retries = 0;
+      const maxRetries = 3;
+      const retryDelay = Duration(milliseconds: 500);
 
-      if (response != null) {
-        _profile = UserProfile.fromJson(response);
+      while (retries < maxRetries) {
+        try {
+          final response = await _supabase
+              .from('profiles')
+              .select()
+              .eq('id', _user!.id)
+              .maybeSingle()
+              .timeout(const Duration(seconds: 5));
+
+          if (response != null) {
+            _profile = UserProfile.fromJson(response);
+            return;
+          }
+
+          // Profile not found yet, retry after delay
+          retries++;
+          if (retries < maxRetries) {
+            await Future.delayed(retryDelay);
+          }
+        } on TimeoutException {
+          retries++;
+          if (retries < maxRetries) {
+            await Future.delayed(retryDelay);
+          } else {
+            debugPrint('Timeout loading profile after $maxRetries retries');
+            rethrow;
+          }
+        }
       }
     } catch (e) {
       debugPrint('Error loading profile: $e');
@@ -74,14 +101,21 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        data: {
-          'role': role == UserRole.pro ? 'pro' : 'client',
-          if (displayName != null) 'display_name': displayName,
-        },
-      );
+      final response = await _supabase.auth
+          .signUp(
+            email: email,
+            password: password,
+            data: {
+              'role': role == UserRole.pro ? 'pro' : 'client',
+              if (displayName != null) 'display_name': displayName,
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => throw TimeoutException(
+              'Inscription prend trop de temps. Vérifiez votre connexion.',
+            ),
+          );
 
       if (response.user != null) {
         _user = response.user;
@@ -91,6 +125,11 @@ class AuthService extends ChangeNotifier {
         return true;
       }
 
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } on TimeoutException catch (e) {
+      _error = e.message ?? 'La demande a pris trop de temps. Réessayez.';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -107,19 +146,20 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<bool> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> signIn({required String email, required String password}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+      final response = await _supabase.auth
+          .signInWithPassword(email: email, password: password)
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => throw TimeoutException(
+              'Connexion prend trop de temps. Vérifiez votre connexion.',
+            ),
+          );
 
       if (response.user != null) {
         _user = response.user;
@@ -129,6 +169,11 @@ class AuthService extends ChangeNotifier {
         return true;
       }
 
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } on TimeoutException catch (e) {
+      _error = e.message ?? 'La demande a pris trop de temps. Réessayez.';
       _isLoading = false;
       notifyListeners();
       return false;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodtruck_app/app/app_router.dart';
 import 'package:foodtruck_app/domain/user_profile.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
@@ -42,6 +43,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ? _displayNameController.text.trim()
           : null,
     );
+
+    if (success && mounted) {
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRouter.home, (route) => false);
+      return;
+    }
 
     if (!success && mounted && authService.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(

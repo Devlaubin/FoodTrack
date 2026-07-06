@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodtruck_app/app/app_router.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,13 @@ class _LoginScreenState extends State<LoginScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
+
+    if (success && mounted) {
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRouter.home, (route) => false);
+      return;
+    }
 
     if (!success && mounted && authService.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -200,7 +208,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.of(context).pushReplacementNamed('/register');
+                            Navigator.of(
+                              context,
+                            ).pushReplacementNamed('/register');
                           },
                           style: TextButton.styleFrom(
                             foregroundColor: FoodtrackColors.rougeKetchup,

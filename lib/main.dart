@@ -51,171 +51,358 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _bob;
+
+  bool _authChecked = false;
+  bool _shouldNavigateHome = false;
+
   @override
   void initState() {
     super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    // Burger/canette rétro: un petit “bob” + rotation légère.
+    _bob = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+
+    // Démarre l’animation tout de suite.
+    _controller.repeat(reverse: true);
+
     _checkAuth();
   }
 
   Future<void> _checkAuth() async {
+    // Garde la logique existante (test/UX): petite latence avant décision.
     await Future.delayed(const Duration(seconds: 1));
-
     if (!mounted) return;
 
     final authService = context.read<AuthService>();
+
+    setState(() {
+      _authChecked = true;
+      _shouldNavigateHome = authService.isAuthenticated;
+    });
+
     if (authService.isAuthenticated) {
+      // Laisse le temps à une courte transition avant navigation.
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (!mounted) return;
+
       Navigator.of(context).pushReplacementNamed(AppRouter.home);
     }
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<AuthService>(
-      builder: (context, auth, child) {
-        if (auth.isLoading) {
-          return Scaffold(
-            backgroundColor: FoodtrackColors.cremeVintage,
-            body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.lunch_dining,
-                    size: 72,
-                    color: FoodtrackColors.rougeKetchup,
-                  ),
-                  const SizedBox(height: 24),
-                  const CircularProgressIndicator(
-                    color: FoodtrackColors.rougeKetchup,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
+    return Scaffold(
+      backgroundColor: FoodtrackColors.cremeVintage,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final maxWidth = constraints.maxWidth;
 
-        if (auth.isAuthenticated) {
-          return const FoodRadarHome();
-        }
-
-        return Scaffold(
-          backgroundColor: FoodtrackColors.cremeVintage,
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: FoodtrackColors.cremeVintage,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: FoodtrackColors.noirBrule,
-                    width: 3,
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
+              return ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: FoodtrackColors.cremeVintage,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
                       color: FoodtrackColors.noirBrule,
-                      offset: Offset(6, 6),
-                      blurRadius: 0,
+                      width: 3,
                     ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.lunch_dining,
-                      size: 72,
-                      color: FoodtrackColors.rougeKetchup,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Foodtrack',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayLarge?.copyWith(fontSize: 36),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'On fait chauffer les moteurs...',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                    boxShadow: const [
+                      BoxShadow(
                         color: FoodtrackColors.noirBrule,
+                        offset: Offset(6, 6),
+                        blurRadius: 0,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(AppRouter.login);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: FoodtrackColors.rougeKetchup,
-                          foregroundColor: FoodtrackColors.cremeVintage,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
+                    ],
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    child: _shouldNavigateHome
+                        ? _SplashTransitionView(animation: _bob)
+                        : _SplashAuthView(
+                            animation: _bob,
+                            authChecked: _authChecked,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            side: const BorderSide(
-                              color: FoodtrackColors.noirBrule,
-                              width: 2,
-                            ),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Se connecter',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(AppRouter.register);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: FoodtrackColors.vertPickle,
-                          foregroundColor: FoodtrackColors.cremeVintage,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            side: const BorderSide(
-                              color: FoodtrackColors.noirBrule,
-                              width: 2,
-                            ),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Creer un compte',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SplashTransitionView extends StatelessWidget {
+  const _SplashTransitionView({required this.animation});
+
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
+    final rotate = Tween<double>(begin: -0.08, end: 0.08).animate(animation);
+    final scale = Tween<double>(begin: 0.98, end: 1.04).animate(animation);
+
+    return Center(
+      key: const ValueKey('navigate-home'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _RetroBurgerCan(animation: animation, iconSize: 78),
+          const SizedBox(height: 18),
+          ScaleTransition(
+            scale: scale,
+            child: const Text(
+              'Le grill s’ouvre…',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: FoodtrackColors.noirBrule,
               ),
             ),
           ),
-        );
-      },
+        ],
+      ),
+    );
+  }
+}
+
+class _SplashAuthView extends StatelessWidget {
+  const _SplashAuthView({required this.animation, required this.authChecked});
+
+  final Animation<double> animation;
+  final bool authChecked;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      key: const ValueKey('auth-view'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _RetroBurgerCan(animation: animation, iconSize: 78),
+          const SizedBox(height: 16),
+          Text(
+            'Foodtrack',
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            authChecked ? 'Bienvenue 👋' : 'On fait chauffer les moteurs…',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: FoodtrackColors.noirBrule,
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (authChecked)
+            AnimatedOpacity(
+              opacity: 1,
+              duration: const Duration(milliseconds: 300),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(AppRouter.login);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FoodtrackColors.rougeKetchup,
+                        foregroundColor: FoodtrackColors.cremeVintage,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          side: const BorderSide(
+                            color: FoodtrackColors.noirBrule,
+                            width: 2,
+                          ),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Se connecter',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(AppRouter.register);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FoodtrackColors.vertPickle,
+                        foregroundColor: FoodtrackColors.cremeVintage,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          side: const BorderSide(
+                            color: FoodtrackColors.noirBrule,
+                            width: 2,
+                          ),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Creer un compte',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            const SizedBox.shrink(),
+        ],
+      ),
+    );
+  }
+}
+
+class _RetroBurgerCan extends StatelessWidget {
+  const _RetroBurgerCan({required this.animation, required this.iconSize});
+
+  final Animation<double> animation;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final translateY = Tween<double>(begin: 0, end: -10).animate(animation);
+    final rotate = Tween<double>(begin: -0.12, end: 0.12).animate(animation);
+
+    // “Canette rétro” via icône + effet d’éclat/cercle autour.
+    return SizedBox(
+      width: iconSize * 2.2,
+      height: iconSize * 1.7,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Halo animé
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: animation,
+              builder: (context, _) {
+                final opacity = (0.25 + 0.25 * animation.value).clamp(0.0, 1.0);
+                final radius = 46 + 8 * animation.value;
+                return Opacity(
+                  opacity: opacity,
+                  child: Container(
+                    width: radius * 2,
+                    height: radius * 2,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: FoodtrackColors.rougeKetchup.withOpacity(0.15),
+                      border: Border.all(
+                        color: FoodtrackColors.noirBrule.withOpacity(0.25),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) {
+              return Transform.translate(
+                offset: Offset(0, translateY.value),
+                child: Transform.rotate(
+                  angle: rotate.value,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // “ombre rétro” nette
+                      Positioned(
+                        bottom: 0,
+                        child: Transform.translate(
+                          offset: const Offset(4, 4),
+                          child: Icon(
+                            Icons.fastfood,
+                            size: iconSize,
+                            color: FoodtrackColors.noirBrule.withOpacity(0.85),
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.fastfood,
+                        size: iconSize,
+                        color: FoodtrackColors.rougeKetchup,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          // Petites “dots” comme un chargeur rétro
+          Positioned(
+            bottom: 8,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(5, (i) {
+                final t = (i / 4);
+                final phase = (animation.value - t).abs();
+                final opacity = (1 - phase).clamp(0.2, 1.0);
+                final size = 6 + 3 * opacity;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Container(
+                    width: size,
+                    height: size,
+                    decoration: BoxDecoration(
+                      color: FoodtrackColors.noirBrule.withOpacity(opacity),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
