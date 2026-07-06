@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:foodtruck_app/app/app_router.dart';
 import 'package:foodtruck_app/config/supabase_config.dart';
+import 'package:foodtruck_app/domain/foodtruck.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
+import 'package:foodtruck_app/services/foodtruck_service.dart';
 import 'package:foodtruck_app/theme/app_theme.dart';
 import 'package:foodtruck_app/theme/colors.dart';
+import 'package:foodtruck_app/widgets/filter_panel.dart';
+import 'package:foodtruck_app/widgets/foodtruck_bottom_sheet.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -22,6 +26,9 @@ void main() async {
       providers: [
         ChangeNotifierProvider(
           create: (_) => AuthService(Supabase.instance.client),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FoodtruckService(Supabase.instance.client),
         ),
       ],
       child: const MyApp(),
@@ -68,17 +75,14 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 900),
     );
 
-    // Burger/canette rétro: un petit “bob” + rotation légère.
     _bob = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
 
-    // Démarre l’animation tout de suite.
     _controller.repeat(reverse: true);
 
     _checkAuth();
   }
 
   Future<void> _checkAuth() async {
-    // Garde la logique existante (test/UX): petite latence avant décision.
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
 
@@ -90,7 +94,6 @@ class _SplashScreenState extends State<SplashScreen>
     });
 
     if (authService.isAuthenticated) {
-      // Laisse le temps à une courte transition avant navigation.
       await Future.delayed(const Duration(milliseconds: 800));
       if (!mounted) return;
 
@@ -162,7 +165,6 @@ class _SplashTransitionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rotate = Tween<double>(begin: -0.08, end: 0.08).animate(animation);
     final scale = Tween<double>(begin: 0.98, end: 1.04).animate(animation);
 
     return Center(
@@ -175,7 +177,7 @@ class _SplashTransitionView extends StatelessWidget {
           ScaleTransition(
             scale: scale,
             child: const Text(
-              'Le grill s’ouvre…',
+              'Le grill s\'ouvre...',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -207,13 +209,13 @@ class _SplashAuthView extends StatelessWidget {
           Text(
             'Foodtrack',
             style: Theme.of(context).textTheme.displayLarge?.copyWith(
-              fontSize: 36,
-              fontWeight: FontWeight.w900,
-            ),
+                  fontSize: 36,
+                  fontWeight: FontWeight.w900,
+                ),
           ),
           const SizedBox(height: 12),
           Text(
-            authChecked ? 'Bienvenue 👋' : 'On fait chauffer les moteurs…',
+            authChecked ? 'Bienvenue !' : 'On fait chauffer les moteurs...',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -312,14 +314,12 @@ class _RetroBurgerCan extends StatelessWidget {
     final translateY = Tween<double>(begin: 0, end: -10).animate(animation);
     final rotate = Tween<double>(begin: -0.12, end: 0.12).animate(animation);
 
-    // “Canette rétro” via icône + effet d’éclat/cercle autour.
     return SizedBox(
       width: iconSize * 2.2,
       height: iconSize * 1.7,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Halo animé
           Positioned.fill(
             child: AnimatedBuilder(
               animation: animation,
@@ -354,7 +354,6 @@ class _RetroBurgerCan extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // “ombre rétro” nette
                       Positioned(
                         bottom: 0,
                         child: Transform.translate(
@@ -377,7 +376,6 @@ class _RetroBurgerCan extends StatelessWidget {
               );
             },
           ),
-          // Petites “dots” comme un chargeur rétro
           Positioned(
             bottom: 8,
             child: Row(
@@ -407,34 +405,27 @@ class _RetroBurgerCan extends StatelessWidget {
   }
 }
 
-class FoodRadarHome extends StatelessWidget {
+class FoodRadarHome extends StatefulWidget {
   const FoodRadarHome({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final foodtrucks = [
-      _FoodtruckSpot(
-        name: 'Burger Lab',
-        status: 'Ouvert',
-        accent: FoodtrackColors.rougeKetchup,
-        position: const LatLng(48.8566, 2.3522),
-      ),
-      _FoodtruckSpot(
-        name: 'Tacos de la Rue',
-        status: 'A 5 min',
-        accent: FoodtrackColors.vertPickle,
-        position: const LatLng(48.8575, 2.3548),
-      ),
-      _FoodtruckSpot(
-        name: 'Pizz\'Art',
-        status: 'Pop-up',
-        accent: FoodtrackColors.jauneMoutarde,
-        position: const LatLng(48.8558, 2.3505),
-      ),
-    ];
+  State<FoodRadarHome> createState() => _FoodRadarHomeState();
+}
 
-    return Consumer<AuthService>(
-      builder: (context, auth, child) {
+class _FoodRadarHomeState extends State<FoodRadarHome> {
+  bool _showFilters = false;
+  final MapController _mapController = MapController();
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<AuthService, FoodtruckService>(
+      builder: (context, auth, foodtruckService, child) {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Radar a food'),
@@ -450,8 +441,7 @@ class FoodRadarHome extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color:
-                              auth.profile!.role.toString().split('.').last ==
+                          color: auth.profile!.role.toString().split('.').last ==
                                   'pro'
                               ? FoodtrackColors.vertPickle
                               : FoodtrackColors.jauneMoutarde,
@@ -490,198 +480,419 @@ class FoodRadarHome extends StatelessWidget {
               ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: FoodtrackColors.jauneMoutarde,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: FoodtrackColors.noirBrule,
-                      width: 3,
-                    ),
+          body: foodtruckService.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: FoodtrackColors.rougeKetchup,
                   ),
-                  child: Text(
-                    auth.profile != null
-                        ? 'Salut, ${auth.profile!.displayName ?? auth.profile!.email.split('@').first} !'
-                        : 'Le grill est en route',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: FoodtrackColors.noirBrule,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: FoodtrackColors.cremeVintage,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: FoodtrackColors.noirBrule,
-                        width: 3,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.map_outlined,
-                              color: FoodtrackColors.rougeKetchup,
-                              size: 24,
+                )
+              : foodtruckService.error != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: FoodtrackColors.rougeKetchup,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            foodtruckService.error!,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: FoodtrackColors.noirBrule,
                             ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Carte des foodtrucks',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: foodtruckService.loadFoodtrucks,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: FoodtrackColors.rougeKetchup,
+                              foregroundColor: FoodtrackColors.cremeVintage,
+                            ),
+                            child: const Text('Reessayer'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: FoodtrackColors.jauneMoutarde,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
                                 color: FoodtrackColors.noirBrule,
+                                width: 3,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
-                            child: Stack(
+                            child: Row(
                               children: [
-                                FlutterMap(
-                                  options: const MapOptions(
-                                    initialCenter: LatLng(48.8566, 2.3522),
-                                    initialZoom: 13.0,
+                                Expanded(
+                                  child: Text(
+                                    auth.profile != null
+                                        ? 'Salut, ${auth.profile!.displayName ?? auth.profile!.email.split('@').first} !'
+                                        : 'Le grill est en route',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: FoodtrackColors.noirBrule,
+                                    ),
                                   ),
-                                  children: [
-                                    TileLayer(
-                                      urlTemplate:
-                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                      userAgentPackageName:
-                                          'com.example.foodtruck_app',
-                                      maxZoom: 19,
-                                      errorTileCallback:
-                                          (tile, error, stackTrace) {},
-                                    ),
-                                    MarkerLayer(
-                                      markers: foodtrucks
-                                          .map(
-                                            (spot) => Marker(
-                                              point: spot.position,
-                                              width: 72,
-                                              height: 72,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(
-                                                        '${spot.name} — ${spot.status}',
-                                                      ),
-                                                      backgroundColor:
-                                                          FoodtrackColors
-                                                              .noirBrule,
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(
-                                                    6,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: spot.accent,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          16,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: FoodtrackColors
-                                                          .noirBrule,
-                                                      width: 2,
-                                                    ),
-                                                    boxShadow: const [
-                                                      BoxShadow(
-                                                        color: FoodtrackColors
-                                                            .noirBrule,
-                                                        offset: Offset(3, 3),
-                                                        blurRadius: 0,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: const Icon(
-                                                    Icons.fastfood,
-                                                    color: FoodtrackColors
-                                                        .noirBrule,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                  ],
                                 ),
-                                Positioned(
-                                  top: 12,
-                                  left: 12,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 8,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: FoodtrackColors.cremeVintage,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: FoodtrackColors.noirBrule,
+                                      width: 2,
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: FoodtrackColors.cremeVintage,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: FoodtrackColors.noirBrule,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Touches de la ville',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        color: FoodtrackColors.noirBrule,
-                                      ),
+                                  ),
+                                  child: Text(
+                                    '${foodtruckService.foodtrucks.length} trucks',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: FoodtrackColors.noirBrule,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+
+                          // Filter toggle button
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showFilters = !_showFilters;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _showFilters
+                                    ? FoodtrackColors.rougeKetchup
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: FoodtrackColors.noirBrule,
+                                  width: 2,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: FoodtrackColors.noirBrule,
+                                    offset: Offset(3, 3),
+                                    blurRadius: 0,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.filter_list,
+                                    size: 20,
+                                    color: _showFilters
+                                        ? FoodtrackColors.cremeVintage
+                                        : FoodtrackColors.noirBrule,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Filtres',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: _showFilters
+                                          ? FoodtrackColors.cremeVintage
+                                          : FoodtrackColors.noirBrule,
+                                    ),
+                                  ),
+                                  if (foodtruckService.cuisineTypeFilter !=
+                                          null ||
+                                      foodtruckService.openNowFilter) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: FoodtrackColors.vertPickle,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        'Actif',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: FoodtrackColors.cremeVintage,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          if (_showFilters) ...[
+                            const SizedBox(height: 12),
+                            const FilterPanel(),
+                          ],
+
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: FoodtrackColors.cremeVintage,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: FoodtrackColors.noirBrule,
+                                  width: 3,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: const [
+                                      Icon(
+                                        Icons.map_outlined,
+                                        color: FoodtrackColors.rougeKetchup,
+                                        size: 24,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Carte des foodtrucks',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          color: FoodtrackColors.noirBrule,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Expanded(
+                                    child: foodtruckService.foodtrucks.isEmpty
+                                        ? Center(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.fastfood_outlined,
+                                                  size: 64,
+                                                  color: FoodtrackColors
+                                                      .noirBrule
+                                                      .withOpacity(0.3),
+                                                ),
+                                                const SizedBox(height: 16),
+                                                const Text(
+                                                  'Aucun foodtruck trouve',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: FoodtrackColors
+                                                        .noirBrule,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                const Text(
+                                                  'Essaie d\'elargir tes filtres',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: FoodtrackColors
+                                                        .noirBrule,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(18),
+                                            child: Stack(
+                                              children: [
+                                                FlutterMap(
+                                                  mapController:
+                                                      _mapController,
+                                                  options: MapOptions(
+                                                    initialCenter:
+                                                        foodtruckService
+                                                                .foodtrucks
+                                                                .isNotEmpty
+                                                            ? foodtruckService
+                                                                .foodtrucks
+                                                                .first
+                                                                .position
+                                                            : const LatLng(
+                                                                48.8566,
+                                                                2.3522),
+                                                    initialZoom: 13.0,
+                                                  ),
+                                                  children: [
+                                                    TileLayer(
+                                                      urlTemplate:
+                                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                      userAgentPackageName:
+                                                          'com.example.foodtruck_app',
+                                                      maxZoom: 19,
+                                                      errorTileCallback:
+                                                          (tile, error,
+                                                              stackTrace) {},
+                                                    ),
+                                                    MarkerLayer(
+                                                      markers:
+                                                          foodtruckService
+                                                              .foodtrucks
+                                                              .map(
+                                                                (foodtruck) =>
+                                                                    Marker(
+                                                                  point:
+                                                                      foodtruck
+                                                                          .position,
+                                                                  width: 72,
+                                                                  height: 72,
+                                                                  child:
+                                                                      _StickerMarker(
+                                                                    foodtruck:
+                                                                        foodtruck,
+                                                                    onTap: () {
+                                                                      showFoodtruckBottomSheet(
+                                                                        context,
+                                                                        foodtruck,
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              )
+                                                              .toList(),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Positioned(
+                                                  top: 12,
+                                                  left: 12,
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 8,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: FoodtrackColors
+                                                          .cremeVintage,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                      border: Border.all(
+                                                        color: FoodtrackColors
+                                                            .noirBrule,
+                                                        width: 2,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      '${foodtruckService.foodtrucks.length} trucks',
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: FoodtrackColors
+                                                            .noirBrule,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
     );
   }
 }
 
-class _FoodtruckSpot {
-  const _FoodtruckSpot({
-    required this.name,
-    required this.status,
-    required this.accent,
-    required this.position,
+class _StickerMarker extends StatelessWidget {
+  const _StickerMarker({
+    required this.foodtruck,
+    required this.onTap,
   });
 
-  final String name;
-  final String status;
-  final Color accent;
-  final LatLng position;
+  final FoodTruck foodtruck;
+  final VoidCallback onTap;
+
+  Color get _accentColor {
+    if (foodtruck.isCurrentlyOpen) {
+      switch (foodtruck.cuisineType?.toLowerCase()) {
+        case 'burger':
+          return FoodtrackColors.rougeKetchup;
+        case 'tacos':
+          return FoodtrackColors.vertPickle;
+        case 'pizza':
+          return FoodtrackColors.jauneMoutarde;
+        default:
+          return FoodtrackColors.rougeKetchup;
+      }
+    }
+    return FoodtrackColors.noirBrule.withOpacity(0.5);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: _accentColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: FoodtrackColors.noirBrule,
+            width: 3,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: FoodtrackColors.noirBrule,
+              offset: Offset(4, 4),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.fastfood,
+          color: foodtruck.isCurrentlyOpen
+              ? FoodtrackColors.cremeVintage
+              : FoodtrackColors.noirBrule.withOpacity(0.3),
+        ),
+      ),
+    );
+  }
 }

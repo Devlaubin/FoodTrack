@@ -5,54 +5,54 @@ de localiser les food trucks partout en France.
 
 ## Objectifs
 
--   Carte interactive des food trucks
--   Géolocalisation en temps réel
--   Comptes utilisateurs et professionnels
--   Avis, favoris et notifications
--   Projet open source
+- Carte interactive des food trucks
+- Géolocalisation en temps réel
+- Comptes utilisateurs et professionnels
+- Avis, favoris et notifications
+- Projet open source
 
 ## Stack technique
 
 ### Frontend
 
--   Flutter
--   Dart
--   flutter_map
--   OpenStreetMap
+- Flutter
+- Dart
+- flutter_map
+- OpenStreetMap
 
 ### Backend
 
--   Node.js
--   Express
--   PostgreSQL
--   PostGIS
--   WebSocket
+- Node.js
+- Express
+- PostgreSQL
+- PostGIS
+- WebSocket
 
 ### Authentification
 
--   Supabase
+- Supabase
 
 ## Fonctionnalités
 
 ### Utilisateurs
 
--   Recherche
--   Filtres
--   Avis
--   Favoris
--   Itinéraire GPS
+- Recherche
+- Filtres
+- Avis
+- Favoris
+- Itinéraire GPS
 
 ### Propriétaires
 
--   Compte professionnel
--   Position GPS en temps réel
--   Menu
--   Photos
--   Horaires
+- Compte professionnel
+- Position GPS en temps réel
+- Menu
+- Photos
+- Horaires
 
 ## Arborescence
 
-``` text
+```text
 foodtruck-france/
 ├── app/
 ├── backend/
@@ -67,26 +67,26 @@ foodtruck-france/
 
 ### V1
 
--   Carte
--   Recherche
--   Fiche food truck
+- Carte
+- Recherche
+- Fiche food truck
 
 ### V2
 
--   Comptes
--   Avis
--   Favoris
+- Comptes
+- Avis
+- Favoris
 
 ### V3
 
--   Temps réel
--   Notifications
+- Temps réel
+- Notifications
 
 ### V4
 
--   Commande
--   Paiement
--   API publique
+- Commande
+- Paiement
+- API publique
 
 ## Licence
 
@@ -107,8 +107,7 @@ MIT
 🤝 Guide de contribution (CONTRIBUTING.md)
 🚀 Roadmap détaillée
 
-
-Reste a faire : 
+Reste a faire :
 
 ✅ Flutter configuré avec une architecture propre (Clean Architecture)
 ✅ Écran d'accueil, connexion et inscription
