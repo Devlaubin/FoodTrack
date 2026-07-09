@@ -12,6 +12,7 @@ class FoodTruck {
     this.status = 'Ouvert',
     this.openingHours,
     this.imageUrl,
+    this.ownerId,
   });
 
   final String id;
@@ -24,6 +25,7 @@ class FoodTruck {
   final String status;
   final Map<String, DayHours>? openingHours;
   final String? imageUrl;
+  final String? ownerId;
 
   LatLng get position => LatLng(latitude, longitude);
 
@@ -49,6 +51,7 @@ class FoodTruck {
       status: json['status'] as String? ?? 'Ouvert',
       openingHours: hoursMap.isNotEmpty ? hoursMap : null,
       imageUrl: json['image_url'] as String?,
+      ownerId: json['owner_id'] as String?,
     );
   }
 
@@ -66,6 +69,7 @@ class FoodTruck {
         (key, value) => MapEntry(key, value.toJson()),
       ),
       'image_url': imageUrl,
+      'owner_id': ownerId,
     };
   }
 

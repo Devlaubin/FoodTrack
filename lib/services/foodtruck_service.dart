@@ -13,6 +13,7 @@ class FoodtruckService extends ChangeNotifier {
   // Filters
   String? _cuisineTypeFilter;
   bool _openNowFilter = false;
+  String _searchQuery = '';
 
   FoodtruckService(this._supabase) {
     loadFoodtrucks();
@@ -23,6 +24,7 @@ class FoodtruckService extends ChangeNotifier {
   String? get error => _error;
   String? get cuisineTypeFilter => _cuisineTypeFilter;
   bool get openNowFilter => _openNowFilter;
+  String get searchQuery => _searchQuery;
 
   List<String> get availableCuisineTypes {
     final types = _foodtrucks
@@ -45,6 +47,16 @@ class FoodtruckService extends ChangeNotifier {
 
     if (_openNowFilter) {
       filtered = filtered.where((ft) => ft.isCurrentlyOpen).toList();
+    }
+
+    if (_searchQuery.trim().isNotEmpty) {
+      final query = _searchQuery.trim().toLowerCase();
+      filtered = filtered.where((ft) {
+        return ft.name.toLowerCase().contains(query) ||
+            ft.status.toLowerCase().contains(query) ||
+            (ft.cuisineType?.toLowerCase().contains(query) ?? false) ||
+            (ft.description?.toLowerCase().contains(query) ?? false);
+      }).toList();
     }
 
     return filtered;
@@ -85,9 +97,15 @@ class FoodtruckService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSearchQuery(String value) {
+    _searchQuery = value;
+    notifyListeners();
+  }
+
   void clearFilters() {
     _cuisineTypeFilter = null;
     _openNowFilter = false;
+    _searchQuery = '';
     notifyListeners();
   }
 

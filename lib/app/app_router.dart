@@ -5,6 +5,7 @@ import 'package:foodtruck_app/screens/auth/login_screen.dart';
 import 'package:foodtruck_app/screens/auth/register_screen.dart';
 import 'package:foodtruck_app/screens/foodtruck_detail_screen.dart';
 import 'package:foodtruck_app/screens/foodtruck_list_screen.dart';
+import 'package:foodtruck_app/screens/home_shell.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -19,7 +20,7 @@ class AppRouter {
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case home:
-        return MaterialPageRoute(builder: (_) => const FoodRadarHome());
+        return MaterialPageRoute(builder: (_) => const HomeShell());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case register:

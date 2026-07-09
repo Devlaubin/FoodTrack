@@ -3,13 +3,41 @@ import 'package:foodtruck_app/services/foodtruck_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:provider/provider.dart';
 
-class FilterPanel extends StatelessWidget {
+class FilterPanel extends StatefulWidget {
   const FilterPanel({super.key});
+
+  @override
+  State<FilterPanel> createState() => _FilterPanelState();
+}
+
+class _FilterPanelState extends State<FilterPanel> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    final service = context.read<FoodtruckService>();
+    _searchController = TextEditingController(text: service.searchQuery);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<FoodtruckService>(
       builder: (context, service, child) {
+        if (_searchController.text != service.searchQuery) {
+          _searchController.value = _searchController.value.copyWith(
+            text: service.searchQuery,
+            selection: TextSelection.collapsed(
+              offset: service.searchQuery.length,
+            ),
+          );
+        }
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -61,6 +89,49 @@ class FilterPanel extends StatelessWidget {
                       ),
                     ),
                 ],
+              ),
+              const SizedBox(height: 12),
+
+              // Search bar
+              Container(
+                decoration: BoxDecoration(
+                  color: FoodtrackColors.cremeVintage,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: FoodtrackColors.noirBrule,
+                    width: 2,
+                  ),
+                ),
+                child: TextField(
+                  onChanged: service.setSearchQuery,
+                  controller: _searchController,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: FoodtrackColors.noirBrule,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Nom ou type de cuisine...',
+                    hintStyle: TextStyle(
+                      color: FoodtrackColors.noirBrule.withOpacity(0.4),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: FoodtrackColors.rougeKetchup,
+                    ),
+                    suffixIcon: service.searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: FoodtrackColors.noirBrule,
+                            ),
+                            onPressed: () => service.setSearchQuery(''),
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
 

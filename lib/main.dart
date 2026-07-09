@@ -5,6 +5,7 @@ import 'package:foodtruck_app/config/supabase_config.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/services/foodtruck_service.dart';
+import 'package:foodtruck_app/services/pro_service.dart';
 import 'package:foodtruck_app/theme/app_theme.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:foodtruck_app/widgets/filter_panel.dart';
@@ -29,6 +30,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => FoodtruckService(Supabase.instance.client),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProService(Supabase.instance.client),
         ),
       ],
       child: const MyApp(),
