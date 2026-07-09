@@ -1,56 +1,126 @@
-# FoodTrack
+# FoodTrack 🍔🗺️
 
-**FoodTrack** est une application Flutter open source permettant
-de localiser les food trucks partout en France.
+**FoodTrack** est une application Flutter open source qui te permet de **localiser les food trucks partout en France**, découvrir leurs menus et suivre l’activité “du grill” en temps réel.
 
-## Objectifs
+> Une expérience **rétro, chaleureuse et néo-brutaliste adoucie** : stickers, ombres nettes, micro-copies complices.
 
-- Carte interactive des food trucks
-- Géolocalisation en temps réel
-- Comptes utilisateurs et professionnels
-- Avis, favoris et notifications
-- Projet open source
+---
 
-## Stack technique
+## ✨ Démarrer rapidement
+
+- Une app mobile **Flutter**
+- Une carte **OpenStreetMap** (via `flutter_map`)
+- Une auth **Supabase**
+- Un backend **Node.js / Express** (idée d’API + temps réel)
+- Une base **PostgreSQL + PostGIS**
+
+---
+
+## 🚀 Fonctionnalités
+
+### Image
+
+(/img/image.png)
+
+### 👥 Pour les utilisateurs
+
+- **Carte interactive** des food trucks
+- **Recherche** + **filtres** (ouverts maintenant, type, etc.)
+- **Fiches food truck** : menu du jour & horaires
+- **Avis** et **favoris**
+- **Itinéraire GPS** (au minimum via deep-link)
+
+### 🧑‍🍳 Pour les propriétaires (Pro)
+
+- Compte professionnel
+- Position GPS **en temps réel**
+- Gestion **menu** et **horaires**
+- Gestion/édition des contenus (photos en phase suivante)
+- Publication dans le **fil d’actualité**
+
+---
+
+## 🧱 Direction Artistique (DA)
+
+L’interface suit une direction claire :
+
+- **Rétro & gourmand** : couleurs vintage + typographies marquées
+- **Néo-brutaliste adouci** : angles arrondis + bordures noires épaisses
+- **Ombres nettes** (offset clair/visuel) : effet “objet physique”
+- Cartes & cards en mode **sticker** (contour noir prononcé)
+
+Objectif : une UI lisible, performante et pleine de personnalité.
+
+---
+
+## 🗺️ Stack technique
 
 ### Frontend
 
-- Flutter
-- Dart
-- flutter_map
-- OpenStreetMap
+- **Flutter** + **Dart**
+- `flutter_map` + **OpenStreetMap**
+- `geolocator` (géolocalisation)
+- **Provider** (gestion d’état)
+- `google_fonts` (typos)
 
 ### Backend
 
-- Node.js
-- Express
-- PostgreSQL
-- PostGIS
-- WebSocket
+- **Node.js** + **Express**
+- WebSocket (temps réel)
+
+### Données
+
+- **PostgreSQL**
+- **PostGIS** (géospatial)
 
 ### Authentification
 
-- Supabase
+- **Supabase Auth**
 
-## Fonctionnalités
+---
 
-### Utilisateurs
+## 🧭 Roadmap (par phases)
 
+### V1 — Les bases qui font plaisir
+
+- Carte
 - Recherche
-- Filtres
+- Fiche food truck (menu + horaires)
+
+### V2 — Construire une communauté
+
+- Comptes
 - Avis
 - Favoris
-- Itinéraire GPS
 
-### Propriétaires
+### V3 — Du “temps réel” qui claque
 
-- Compte professionnel
-- Position GPS en temps réel
-- Menu
-- Photos
-- Horaires
+- Mise à jour de positions / événements
+- Notifications
 
-## Arborescence
+### V4 — Public API & fonctionnalités avancées
+
+- Commande
+- Paiement
+- API publique documentée
+
+---
+
+## ✅ Ce qui est déjà prévu / structuré
+
+- Architecture Flutter orientée **Clean Architecture**
+- Écrans de base : Splash → Home, connexion & inscription
+- Intégration OpenStreetMap
+- Géolocalisation utilisateur
+- Backend prêt à s’intégrer (API + WebSockets)
+- PostgreSQL + PostGIS (modèle géospatial)
+- Supabase Auth
+- Démarrage de la stack via **Docker Compose** (objectif)
+- CI/CD via **GitHub Actions** (objectif)
+
+---
+
+## 📁 Arborescence (repère)
 
 ```text
 foodtruck-france/
@@ -63,60 +133,19 @@ foodtruck-france/
 └── README.md
 ```
 
-## Roadmap
+---
 
-### V1
+## 🧑‍💻 Contribuer
 
-- Carte
-- Recherche
-- Fiche food truck
+FoodTrack est open source : tu peux contribuer aux écrans, au backend, aux performances et à la direction artistique.
 
-### V2
+- Ouvre des issues pour proposer des features/améliorations
+- Crée des PR avec un résumé clair des changements
 
-- Comptes
-- Avis
-- Favoris
+> Astuce : la feuille de route est détaillée dans le dossier `Markdown/`.
 
-### V3
+---
 
-- Temps réel
-- Notifications
+## 📄 Licence
 
-### V4
-
-- Commande
-- Paiement
-- API publique
-
-## Licence
-
-MIT
-
-## GPT Suite
-
-📁 Une architecture Flutter propre (Clean Architecture)
-🌐 Backend Node.js déjà configuré
-🗄️ PostgreSQL + PostGIS
-🔐 Authentification Supabase
-🗺️ Intégration d'OpenStreetMap
-📡 API REST et WebSockets
-🐳 Configuration Docker
-🔄 CI/CD avec GitHub Actions
-📝 Documentation complète
-⚖️ Licence MIT
-🤝 Guide de contribution (CONTRIBUTING.md)
-🚀 Roadmap détaillée
-
-Reste a faire :
-
-✅ Flutter configuré avec une architecture propre (Clean Architecture)
-✅ Écran d'accueil, connexion et inscription
-✅ Carte OpenStreetMap fonctionnelle
-✅ Géolocalisation de l'utilisateur
-✅ Backend Node.js + Express déjà opérationnel
-✅ Base PostgreSQL + PostGIS avec les premières tables
-✅ Authentification Supabase
-✅ Docker Compose pour démarrer toute la stack en une commande
-✅ Documentation complète
-✅ GitHub Actions (tests + build)
-✅ Structure pensée pour accueillir des milliers de food trucks
+**MIT** — voir le fichier `LICENSE`.
