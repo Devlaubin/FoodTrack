@@ -20,7 +20,7 @@
 
 ### Image
 
-(/img/image.png)
+![scrennshot](img/image.png)
 
 ### 👥 Pour les utilisateurs
 
