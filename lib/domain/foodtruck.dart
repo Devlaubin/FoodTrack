@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:foodtruck_app/domain/foodtruck_icons.dart';
 
 class FoodTruck {
   const FoodTruck({
@@ -28,6 +30,10 @@ class FoodTruck {
   final String? ownerId;
 
   LatLng get position => LatLng(latitude, longitude);
+
+  /// Returns the IconData for this foodtruck's chosen logo.
+  /// Falls back to [Icons.fastfood] if no icon is selected.
+  IconData get logoIcon => resolveIcon(imageUrl);
 
   factory FoodTruck.fromJson(Map<String, dynamic> json) {
     final hoursMap = <String, DayHours>{};

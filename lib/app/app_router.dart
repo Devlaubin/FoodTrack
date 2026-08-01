@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
-import 'package:foodtruck_app/main.dart';
 import 'package:foodtruck_app/screens/auth/login_screen.dart';
 import 'package:foodtruck_app/screens/auth/register_screen.dart';
 import 'package:foodtruck_app/screens/foodtruck_detail_screen.dart';
 import 'package:foodtruck_app/screens/foodtruck_list_screen.dart';
 import 'package:foodtruck_app/screens/home_shell.dart';
+import 'package:foodtruck_app/screens/food_radar_home.dart';
+import 'package:foodtruck_app/screens/splash_screen.dart';
 
 class AppRouter {
   static const String splash = '/';

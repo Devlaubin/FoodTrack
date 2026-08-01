@@ -44,3 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .env
+
+# Signing keystore & secrets (BETA release)
+android/key.properties
+android/app/foodtrack-key.jks
+*.jks

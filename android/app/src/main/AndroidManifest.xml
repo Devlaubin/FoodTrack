@@ -1,6 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for Supabase API calls, OpenStreetMap tiles and auth -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Required by geolocator for GPS position (user location + pro live position) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Recommended for faster GPS lock on devices -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <application
-        android:label="foodtruck_app"
+        android:label="FoodTrack"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

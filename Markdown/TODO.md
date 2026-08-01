@@ -88,3 +88,35 @@ Phase 15 — Tests, perf & CI
 51) Vérification contrastes sur petits écrans.
 52) Optimiser perf (notamment autour du rendu carte/markers et rebuilds; isoler avec RepaintBoundary).
 53) GitHub Actions: tests + build multi-plateformes.
+
+Phase 16 :
+1) Photà bass64 supabase 
+signaler et avie retour
+iamge food truck
+acces admin pour ban des truck
+ajouter kiosque
+coordonenr resaux insta et tout version pro
+carte en grand 
+pofiner logo
+credit dans les parametre
+donner l'encienneter de la connecter du pro
+ecrand dechargemtn de l'app avec l'image 
+changer logo dans l'ecran de connection
+recherche apra ville et autoits de soi
+mettre teste a la place de logo
+faire site web presentation b 
+vhoisir parametre heure preferer manger et mettre en anace qd revenir 
+chosiir auon prevenir foostruck
+vrer des credit et  tout pour opestreetmap et tt
+permettre la supression de compte
+ajoute des paraletre utile en plus par rapport a l'application
+plusieurs type de cuisine
+espace anlyse pour les pro vue ect
+rajoter carte ficelité, que si les pro veulent 
+integration stocakge ph"oto avec compression des image calité ou faire en sorte qye ca prenne bcp moins de place.
+verification email code 5chiffe A2F
+menu droullent avec plusiqurs type cuisoine disposible
+chque semine actualisation des pri localisation ddeclaré ou il va cahque semaine et localisation par default 
+mettre oivert et ferme en temps reel 
+meilleur gestion du compte pro
+nouevel page dans pro gestion des ocalisation par dedfault

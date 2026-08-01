@@ -74,7 +74,7 @@ class FoodtruckCard extends StatelessWidget {
                   ),
                 ),
                 child: Icon(
-                  Icons.fastfood,
+                  foodtruck.logoIcon,
                   size: 32,
                   color: foodtruck.isCurrentlyOpen
                       ? FoodtrackColors.cremeVintage

@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoodTrack 🍔 — Connexion & Inscription</title>
+
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="Connectez-vous ou créez votre compte FoodTrack pour retrouver vos food trucks préférés et gérer votre espace pro."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/png" href="assets/Logo.png" />
+
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              creme: "#FDF6EC",
+              ketchup: "#D32F2F",
+              moutarde: "#FBC02D",
+              pickle: "#388E3C",
+              noir: "#212121",
+            },
+            fontFamily: {
+              title: ['"Bowlby One"', "cursive"],
+              body: ['"Plus Jakarta Sans"', "sans-serif"],
+            },
+            boxShadow: {
+              brutal: "5px 5px 0px #212121",
+              "brutal-hover": "2px 2px 0px #212121",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 1.1rem;
+        color: #666;
+        transition: color 0.2s;
+      }
+      .password-toggle:hover {
+        color: #212121;
+      }
+      .password-wrapper {
+        position: relative;
+      }
+      .strength-bar {
+        height: 4px;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+        margin-top: 6px;
+      }
+      .strength-text {
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-top: 2px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-creme text-noir font-body antialiased min-h-screen flex flex-col justify-between"
+  >
+    <!-- ===== HEADER ===== -->
+    <header class="max-w-md mx-auto w-full text-center pt-6 px-4">
+      <a href="index.html" class="inline-flex items-center gap-3 group">
+        <img
+          src="assets/Logo.png"
+          alt="FoodTrack"
+          class="w-10 h-10 md:w-12 md:h-12 group-hover:animate-wiggle"
+        />
+        <span class="font-title text-2xl md:text-3xl tracking-wide uppercase"
+          >FoodTrack</span
+        >
+      </a>
+    </header>
+
+    <!-- ===== MAIN FORM ===== -->
+    <main class="max-w-md mx-auto w-full my-6 px-4">
+      <div class="neo-card p-6 md:p-8 shadow-brutal">
+        <!-- Tab buttons -->
+        <div class="flex gap-2 mb-6 border-b-4 border-noir pb-4">
+          <button
+            id="tab-login"
+            onclick="switchTab('login')"
+            class="flex-1 py-2 font-title text-sm md:text-base neo-card bg-moutarde shadow-brutal transition-all"
+          >
+            Connexion
+          </button>
+          <button
+            id="tab-register"
+            onclick="switchTab('register')"
+            class="flex-1 py-2 font-title text-sm md:text-base neo-card bg-white hover:bg-gray-100 transition-all"
+          >
+            Inscription
+          </button>
+        </div>
+
+        <!-- Alert message -->
+        <div
+          id="alert-message"
+          class="hidden p-3 mb-4 neo-card text-sm font-bold flex items-center gap-2"
+        >
+          <span id="alert-icon"></span>
+          <span id="alert-text"></span>
+        </div>
+
+        <!-- ===== LOGIN FORM ===== -->
+        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block font-bold mb-1 text-sm">Adresse Email</label>
+            <input
+              type="email"
+              id="login-email"
+              required
+              class="neo-input"
+              placeholder="chef@foodtrack.fr"
+              autocomplete="email"
+            />
+          </div>
+          <div>
+            <label class="block font-bold mb-1 text-sm">Mot de passe</label>
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="login-password"
+                required
+                class="neo-input pr-10"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              <span
+                class="password-toggle"
+                onclick="togglePassword('login-password', this)"
+                aria-label="Afficher/masquer le mot de passe"
+              >
+                <i class="far fa-eye"></i>
+              </span>
+            </div>
+            <div class="text-right mt-1">
+              <a
+                href="#"
+                class="text-xs font-bold text-ketchup hover:underline"
+                onclick="
+                  alert(
+                    'Fonctionnalité à venir : réinitialisation du mot de passe',
+                  )
+                "
+                >Mot de passe oublié ?</a
+              >
+            </div>
+          </div>
+          <button
+            type="submit"
+            id="login-btn"
+            class="w-full neo-card bg-ketchup text-white font-title py-3 shadow-brutal hover:translate-x-1 hover:translate-y-1 hover:shadow-brutal-hover transition-all text-lg flex items-center justify-center gap-2"
+          >
+            <span id="login-btn-text">Se connecter 🚀</span>
+            <span id="login-btn-spinner" class="spinner hidden"></span>
+          </button>
+        </form>
+
+        <!-- ===== REGISTER FORM ===== -->
+        <form
+          id="form-register"
+          onsubmit="handleRegister(event)"
+          class="space-y-4 hidden"
+        >
+          <!-- Role selector -->
+          <div>
+            <label class="block font-bold mb-1 text-sm">Vous êtes :</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                id="role-user"
+                onclick="setRole('user')"
+                class="neo-card bg-moutarde p-2 text-center font-bold text-xs shadow-brutal transition-all"
+              >
+                😋 Gourmand
+              </button>
+              <button
+                type="button"
+                id="role-pro"
+                onclick="setRole('pro')"
+                class="neo-card bg-white p-2 text-center font-bold text-xs transition-all"
+              >
+                🧑‍🍳 Food Truck Pro
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold mb-1 text-sm">Nom / Pseudo</label>
+            <input
+              type="text"
+              id="reg-name"
+              required
+              class="neo-input"
+              placeholder="Camion Gourmand"
+              autocomplete="name"
+            />
+          </div>
+          <div>
+            <label class="block font-bold mb-1 text-sm">Adresse Email</label>
+            <input
+              type="email"
+              id="reg-email"
+              required
+              class="neo-input"
+              placeholder="contact@foodtruck.fr"
+              autocomplete="email"
+            />
+          </div>
+          <div>
+            <label class="block font-bold mb-1 text-sm">Mot de passe</label>
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="reg-password"
+                minlength="6"
+                required
+                class="neo-input pr-10"
+                placeholder="••••••••"
+                autocomplete="new-password"
+                oninput="checkPasswordStrength(this.value)"
+              />
+              <span
+                class="password-toggle"
+                onclick="togglePassword('reg-password', this)"
+                aria-label="Afficher/masquer le mot de passe"
+              >
+                <i class="far fa-eye"></i>
+              </span>
+            </div>
+            <!-- Strength indicator -->
+            <div
+              class="strength-bar"
+              id="strength-bar"
+              style="background: #e0e0e0"
+            ></div>
+            <span class="strength-text" id="strength-text"></span>
+          </div>
+          <div>
+            <label class="block font-bold mb-1 text-sm"
+              >Confirmer le mot de passe</label
+            >
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="reg-password-confirm"
+                required
+                class="neo-input pr-10"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <span
+                class="password-toggle"
+                onclick="togglePassword('reg-password-confirm', this)"
+                aria-label="Afficher/masquer"
+              >
+                <i class="far fa-eye"></i>
+              </span>
+            </div>
+            <span
+              id="password-match"
+              class="text-xs font-bold mt-1 hidden"
+            ></span>
+          </div>
+
+          <div class="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="reg-terms"
+              required
+              class="mt-1 w-4 h-4 border-2 border-noir rounded accent-ketchup"
+            />
+            <label for="reg-terms" class="text-xs font-bold text-gray-600">
+              J'accepte les
+              <a href="#" class="text-ketchup underline"
+                >Conditions Générales d'Utilisation</a
+              >
+              et la
+              <a href="#" class="text-ketchup underline"
+                >Politique de Confidentialité</a
+              >
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            id="register-btn"
+            class="w-full neo-card bg-pickle text-white font-title py-3 shadow-brutal hover:translate-x-1 hover:translate-y-1 hover:shadow-brutal-hover transition-all text-lg flex items-center justify-center gap-2"
+          >
+            <span id="register-btn-text">Créer mon compte 🎉</span>
+            <span id="register-btn-spinner" class="spinner hidden"></span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Back to home -->
+      <div class="text-center mt-6">
+        <a
+          href="index.html"
+          class="font-bold text-sm text-gray-600 hover:text-ketchup transition-colors"
+        >
+          <i class="fas fa-arrow-left mr-1"></i> Retour à l'accueil
+        </a>
+      </div>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer
+      class="text-center font-bold text-xs py-4 text-gray-600 border-t-2 border-noir bg-white"
+    >
+      FoodTrack — Connexion sécurisée via Supabase 🔒
+    </footer>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+      // =============================================
+      // 1. CONFIG SUPABASE (À MODIFIER AVEC VOS CLÉS)
+      // =============================================
+      const SUPABASE_URL = "VOTRE_SUPABASE_URL"; // Remplacez par votre URL Supabase
+      const SUPABASE_KEY = "VOTRE_SUPABASE_ANON_KEY"; // Remplacez par votre clé Anon Supabase
+      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      let currentRole = "user"; // Rôle par défaut
+
+      // Auto-switch to register tab if ?register=1 in URL
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("register") === "1") {
+          switchTab("register");
+        }
+      });
+
+      // =============================================
+      // 2. SWITCH TABS
+      // =============================================
+      function switchTab(tab) {
+        const loginForm = document.getElementById("form-login");
+        const registerForm = document.getElementById("form-register");
+        const tabLogin = document.getElementById("tab-login");
+        const tabRegister = document.getElementById("tab-register");
+
+        if (tab === "login") {
+          loginForm.classList.remove("hidden");
+          registerForm.classList.add("hidden");
+          tabLogin.className =
+            "flex-1 py-2 font-title text-sm md:text-base neo-card bg-moutarde shadow-brutal";
+          tabRegister.className =
+            "flex-1 py-2 font-title text-sm md:text-base neo-card bg-white hover:bg-gray-100";
+        } else {
+          loginForm.classList.add("hidden");
+          registerForm.classList.remove("hidden");
+          tabRegister.className =
+            "flex-1 py-2 font-title text-sm md:text-base neo-card bg-moutarde shadow-brutal";
+          tabLogin.className =
+            "flex-1 py-2 font-title text-sm md:text-base neo-card bg-white hover:bg-gray-100";
+        }
+        // Reset alert on tab switch
+        hideAlert();
+      }
+
+      // =============================================
+      // 3. ROLE SELECTOR
+      // =============================================
+      function setRole(role) {
+        currentRole = role;
+        const btnUser = document.getElementById("role-user");
+        const btnPro = document.getElementById("role-pro");
+
+        if (role === "user") {
+          btnUser.className =
+            "neo-card bg-moutarde p-2 text-center font-bold text-xs shadow-brutal";
+          btnPro.className =
+            "neo-card bg-white p-2 text-center font-bold text-xs";
+        } else {
+          btnPro.className =
+            "neo-card bg-pickle text-white p-2 text-center font-bold text-xs shadow-brutal";
+          btnUser.className =
+            "neo-card bg-white p-2 text-center font-bold text-xs";
+        }
+      }
+
+      // =============================================
+      // 4. TOGGLE PASSWORD VISIBILITY
+      // =============================================
+      function togglePassword(inputId, toggleEl) {
+        const input = document.getElementById(inputId);
+        const icon = toggleEl.querySelector("i");
+        if (input.type === "password") {
+          input.type = "text";
+          icon.className = "far fa-eye-slash";
+        } else {
+          input.type = "password";
+          icon.className = "far fa-eye";
+        }
+      }
+
+      // =============================================
+      // 5. PASSWORD STRENGTH INDICATOR
+      // =============================================
+      function checkPasswordStrength(password) {
+        const bar = document.getElementById("strength-bar");
+        const text = document.getElementById("strength-text");
+
+        if (!password) {
+          bar.style.background = "#e0e0e0";
+          bar.style.width = "0%";
+          text.textContent = "";
+          return;
+        }
+
+        let strength = 0;
+        if (password.length >= 6) strength += 20;
+        if (password.length >= 10) strength += 15;
+        if (/[a-z]/.test(password)) strength += 15;
+        if (/[A-Z]/.test(password)) strength += 20;
+        if (/[0-9]/.test(password)) strength += 15;
+        if (/[^a-zA-Z0-9]/.test(password)) strength += 15;
+
+        const colors = ["#D32F2F", "#E65100", "#FBC02D", "#7CB342", "#388E3C"];
+        const labels = ["Très faible", "Faible", "Moyen", "Fort", "Très fort"];
+        const index = Math.min(Math.floor(strength / 20), 4);
+
+        bar.style.width = strength + "%";
+        bar.style.background = colors[index];
+        text.textContent = "Force : " + labels[index];
+        text.style.color = colors[index];
+      }
+
+      // =============================================
+      // 6. SHOW / HIDE ALERT
+      // =============================================
+      function showAlert(msg, isError = true) {
+        const alert = document.getElementById("alert-message");
+        const icon = document.getElementById("alert-icon");
+        const text = document.getElementById("alert-text");
+
+        alert.classList.remove("hidden", "bg-red-200", "bg-green-200");
+        alert.classList.add(isError ? "bg-red-200" : "bg-green-200");
+
+        icon.textContent = isError ? "❌" : "✅";
+        text.textContent = msg;
+
+        // Auto-hide after 5s for success
+        if (!isError) {
+          setTimeout(hideAlert, 5000);
+        }
+      }
+
+      function hideAlert() {
+        const alert = document.getElementById("alert-message");
+        alert.classList.add("hidden");
+      }
+
+      // =============================================
+      // 7. SET LOADING STATE
+      // =============================================
+      function setLoading(formId, loading) {
+        const btn = document.getElementById(
+          formId === "login" ? "login-btn" : "register-btn",
+        );
+        const btnText = document.getElementById(
+          formId === "login" ? "login-btn-text" : "register-btn-text",
+        );
+        const spinner = document.getElementById(
+          formId === "login" ? "login-btn-spinner" : "register-btn-spinner",
+        );
+
+        if (loading) {
+          btnText.classList.add("hidden");
+          spinner.classList.remove("hidden");
+          btn.style.pointerEvents = "none";
+          btn.style.opacity = "0.8";
+        } else {
+          btnText.classList.remove("hidden");
+          spinner.classList.add("hidden");
+          btn.style.pointerEvents = "auto";
+          btn.style.opacity = "1";
+        }
+      }
+
+      // =============================================
+      // 8. HANDLE LOGIN
+      // =============================================
+      async function handleLogin(e) {
+        e.preventDefault();
+        hideAlert();
+
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
+
+        // Basic validation
+        if (!email || !password) {
+          showAlert("Veuillez remplir tous les champs.", true);
+          return;
+        }
+
+        setLoading("login", true);
+
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+          });
+
+          if (error) {
+            showAlert(getFriendlyErrorMessage(error.message), true);
+          } else {
+            showAlert("✅ Connexion réussie ! Redirection...", false);
+            setTimeout(() => (window.location.href = "index.html"), 1500);
+          }
+        } catch (err) {
+          showAlert("Erreur réseau. Veuillez réessayer.", true);
+        } finally {
+          setLoading("login", false);
+        }
+      }
+
+      // =============================================
+      // 9. HANDLE REGISTER
+      // =============================================
+      async function handleRegister(e) {
+        e.preventDefault();
+        hideAlert();
+
+        const name = document.getElementById("reg-name").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const password = document.getElementById("reg-password").value;
+        const passwordConfirm = document.getElementById(
+          "reg-password-confirm",
+        ).value;
+        const terms = document.getElementById("reg-terms").checked;
+
+        // Validations
+        if (!name || !email || !password || !passwordConfirm) {
+          showAlert("Veuillez remplir tous les champs.", true);
+          return;
+        }
+
+        if (password !== passwordConfirm) {
+          showAlert("Les mots de passe ne correspondent pas.", true);
+          return;
+        }
+
+        if (password.length < 6) {
+          showAlert(
+            "Le mot de passe doit contenir au moins 6 caractères.",
+            true,
+          );
+          return;
+        }
+
+        if (!terms) {
+          showAlert("Veuillez accepter les conditions d'utilisation.", true);
+          return;
+        }
+
+        setLoading("register", true);
+
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+              data: {
+                full_name: name,
+                role: currentRole,
+              },
+            },
+          });
+
+          if (error) {
+            showAlert(getFriendlyErrorMessage(error.message), true);
+          } else {
+            showAlert(
+              "✅ Compte créé avec succès ! Vérifiez votre email pour valider.",
+              false,
+            );
+            // Reset form
+            document.getElementById("reg-name").value = "";
+            document.getElementById("reg-email").value = "";
+            document.getElementById("reg-password").value = "";
+            document.getElementById("reg-password-confirm").value = "";
+            document.getElementById("strength-bar").style.width = "0%";
+            document.getElementById("strength-text").textContent = "";
+          }
+        } catch (err) {
+          showAlert("Erreur réseau. Veuillez réessayer.", true);
+        } finally {
+          setLoading("register", false);
+        }
+      }
+
+      // =============================================
+      // 10. FRIENDLY ERROR MESSAGES
+      // =============================================
+      function getFriendlyErrorMessage(msg) {
+        const errors = {
+          "Invalid login credentials": "Email ou mot de passe incorrect.",
+          "Email not confirmed":
+            "Email non confirmé. Vérifiez votre boîte de réception.",
+          "User already registered": "Un compte existe déjà avec cet email.",
+          "Password should be at least 6 characters":
+            "Le mot de passe doit contenir au moins 6 caractères.",
+          "rate limit":
+            "Trop de tentatives. Veuillez patienter quelques instants.",
+        };
+
+        for (const [key, value] of Object.entries(errors)) {
+          if (msg.toLowerCase().includes(key.toLowerCase())) {
+            return value;
+          }
+        }
+        return msg; // Return original if no friendly message found
+      }
+    </script>
+  </body>
+</html>

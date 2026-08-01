@@ -5,10 +5,7 @@ import 'package:foodtruck_app/theme/colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FoodtruckDetailScreen extends StatefulWidget {
-  const FoodtruckDetailScreen({
-    super.key,
-    required this.foodtruck,
-  });
+  const FoodtruckDetailScreen({super.key, required this.foodtruck});
 
   final FoodTruck foodtruck;
 
@@ -27,6 +24,11 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
     _loadMenuItems();
   }
 
@@ -59,21 +61,49 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
     }
   }
 
+  Color get _accentColor {
+    switch (widget.foodtruck.cuisineType?.toLowerCase()) {
+      case 'burger':
+        return FoodtrackColors.rougeKetchup;
+      case 'tacos':
+        return FoodtrackColors.vertPickle;
+      case 'pizza':
+        return FoodtrackColors.jauneMoutarde;
+      case 'french':
+        return FoodtrackColors.noirBrule;
+      case 'crepes':
+        return FoodtrackColors.jauneMoutarde;
+      case 'falafel':
+        return FoodtrackColors.vertPickle;
+      case 'asian':
+        return FoodtrackColors.rougeKetchup;
+      case 'bbq':
+        return FoodtrackColors.rougeKetchup;
+      default:
+        return FoodtrackColors.rougeKetchup;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FoodtrackColors.cremeVintage,
       body: CustomScrollView(
         slivers: [
+          // Banner header
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 180,
             pinned: true,
             backgroundColor: FoodtrackColors.cremeVintage,
-            foregroundColor: FoodtrackColors.noirBrule,
+            foregroundColor: FoodtrackColors.cremeVintage,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
-                  color: _getAccentColor(),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [_accentColor, _accentColor.withOpacity(0.8)],
+                  ),
                   border: const Border(
                     bottom: BorderSide(
                       color: FoodtrackColors.noirBrule,
@@ -81,23 +111,68 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                     ),
                   ),
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.fastfood,
-                    size: 80,
-                    color: FoodtrackColors.cremeVintage,
-                  ),
+                child: Stack(
+                  children: [
+                    // Decorative pattern
+                    Positioned(
+                      right: -30,
+                      top: -30,
+                      child: Icon(
+                        widget.foodtruck.logoIcon,
+                        size: 160,
+                        color: FoodtrackColors.cremeVintage.withOpacity(0.15),
+                      ),
+                    ),
+                    Positioned(
+                      left: -20,
+                      bottom: -20,
+                      child: Icon(
+                        widget.foodtruck.logoIcon,
+                        size: 100,
+                        color: FoodtrackColors.cremeVintage.withOpacity(0.1),
+                      ),
+                    ),
+                    // Main icon
+                    Center(
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: FoodtrackColors.cremeVintage,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: FoodtrackColors.noirBrule,
+                            width: 3,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: FoodtrackColors.noirBrule,
+                              offset: Offset(4, 4),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          widget.foodtruck.logoIcon,
+                          size: 44,
+                          color: _accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
+
+          // Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
+                  // ---- Info card ----
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -119,18 +194,22 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Name + status
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: Text(
                                 widget.foodtruck.name,
                                 style: const TextStyle(
-                                  fontSize: 28,
+                                  fontSize: 26,
                                   fontWeight: FontWeight.w900,
                                   color: FoodtrackColors.noirBrule,
+                                  height: 1.1,
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -139,7 +218,9 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                               decoration: BoxDecoration(
                                 color: widget.foodtruck.isCurrentlyOpen
                                     ? FoodtrackColors.vertPickle
-                                    : FoodtrackColors.noirBrule.withOpacity(0.1),
+                                    : FoodtrackColors.noirBrule.withOpacity(
+                                        0.1,
+                                      ),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: FoodtrackColors.noirBrule,
@@ -149,13 +230,16 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.circle,
-                                    size: 10,
-                                    color: widget.foodtruck.isCurrentlyOpen
-                                        ? FoodtrackColors.cremeVintage
-                                        : FoodtrackColors.noirBrule
-                                            .withOpacity(0.3),
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: widget.foodtruck.isCurrentlyOpen
+                                          ? FoodtrackColors.cremeVintage
+                                          : FoodtrackColors.noirBrule
+                                                .withOpacity(0.3),
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
@@ -163,12 +247,12 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                                         ? 'OUVERT'
                                         : 'FERME',
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
                                       color: widget.foodtruck.isCurrentlyOpen
                                           ? FoodtrackColors.cremeVintage
                                           : FoodtrackColors.noirBrule
-                                              .withOpacity(0.5),
+                                                .withOpacity(0.5),
                                     ),
                                   ),
                                 ],
@@ -176,6 +260,8 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                             ),
                           ],
                         ),
+
+                        // Cuisine type
                         if (widget.foodtruck.cuisineType != null) ...[
                           const SizedBox(height: 12),
                           Container(
@@ -195,51 +281,135 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                               widget.foodtruck.cuisineType!.toUpperCase(),
                               style: const TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                                 color: FoodtrackColors.noirBrule,
+                                letterSpacing: 0.8,
                               ),
                             ),
                           ),
                         ],
+
+                        // Description
                         if (widget.foodtruck.description != null &&
                             widget.foodtruck.description!.isNotEmpty) ...[
                           const SizedBox(height: 16),
-                          Text(
-                            widget.foodtruck.description!,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: FoodtrackColors.noirBrule.withOpacity(0.8),
-                              height: 1.4,
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: FoodtrackColors.cremeVintage,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: FoodtrackColors.noirBrule.withOpacity(
+                                  0.3,
+                                ),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.format_quote,
+                                  size: 18,
+                                  color: FoodtrackColors.rougeKetchup
+                                      .withOpacity(0.4),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    widget.foodtruck.description!,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: FoodtrackColors.noirBrule
+                                          .withOpacity(0.8),
+                                      height: 1.4,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 18,
-                              color: FoodtrackColors.rougeKetchup,
+
+                        const SizedBox(height: 16),
+
+                        // Location + hours row
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: FoodtrackColors.cremeVintage,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: FoodtrackColors.noirBrule.withOpacity(0.3),
+                              width: 1.5,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.foodtruck.status,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: FoodtrackColors.noirBrule,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                size: 18,
+                                color: FoodtrackColors.rougeKetchup,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  widget.foodtruck.status,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: FoodtrackColors.noirBrule,
+                                  ),
+                                ),
+                              ),
+                              if (widget.foodtruck.getTodayHours() != null) ...[
+                                Container(
+                                  width: 1,
+                                  height: 20,
+                                  color: FoodtrackColors.noirBrule.withOpacity(
+                                    0.2,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Icon(
+                                  Icons.access_time,
+                                  size: 16,
+                                  color: widget.foodtruck.isCurrentlyOpen
+                                      ? FoodtrackColors.vertPickle
+                                      : FoodtrackColors.noirBrule.withOpacity(
+                                          0.5,
+                                        ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  widget.foodtruck.getTodayHours()!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: widget.foodtruck.isCurrentlyOpen
+                                        ? FoodtrackColors.vertPickle
+                                        : FoodtrackColors.noirBrule.withOpacity(
+                                            0.6,
+                                          ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                  // Tabs
+                  // ---- Tabs ----
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -254,7 +424,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                       labelColor: FoodtrackColors.cremeVintage,
                       unselectedLabelColor: FoodtrackColors.noirBrule,
                       indicator: BoxDecoration(
-                        color: FoodtrackColors.rougeKetchup,
+                        color: _accentColor,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: FoodtrackColors.noirBrule,
@@ -264,12 +434,42 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorPadding: const EdgeInsets.all(4),
                       labelStyle: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
-                      tabs: const [
-                        Tab(text: 'MENU'),
-                        Tab(text: 'HORAIRES'),
+                      tabs: [
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.restaurant_menu,
+                                size: 18,
+                                color: _tabController.index == 0
+                                    ? FoodtrackColors.cremeVintage
+                                    : FoodtrackColors.noirBrule,
+                              ),
+                              const SizedBox(width: 6),
+                              const Text('MENU'),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.schedule,
+                                size: 18,
+                                color: _tabController.index == 1
+                                    ? FoodtrackColors.cremeVintage
+                                    : FoodtrackColors.noirBrule,
+                              ),
+                              const SizedBox(width: 6),
+                              const Text('HORAIRES'),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -281,10 +481,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                     height: 500,
                     child: TabBarView(
                       controller: _tabController,
-                      children: [
-                        _buildMenuTab(),
-                        _buildHoursTab(),
-                      ],
+                      children: [_buildMenuTab(), _buildHoursTab()],
                     ),
                   ),
                 ],
@@ -299,9 +496,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
   Widget _buildMenuTab() {
     if (_isLoadingMenu) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: FoodtrackColors.rougeKetchup,
-        ),
+        child: CircularProgressIndicator(color: FoodtrackColors.rougeKetchup),
       );
     }
 
@@ -357,6 +552,14 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                 color: FoodtrackColors.noirBrule,
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Ce foodtruck n\'a pas encore ajoute son menu.',
+              style: TextStyle(
+                fontSize: 14,
+                color: FoodtrackColors.noirBrule.withOpacity(0.5),
+              ),
+            ),
           ],
         ),
       );
@@ -365,19 +568,16 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
     // Group items by category
     final categories = <String, List<MenuItem>>{};
     for (final item in _menuItems) {
-      final cat = item.category ?? 'Autre';
+      final cat = item.category ?? 'Plat';
       categories.putIfAbsent(cat, () => []).add(item);
     }
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: FoodtrackColors.noirBrule,
-          width: 3,
-        ),
+        border: Border.all(color: FoodtrackColors.noirBrule, width: 3),
         boxShadow: const [
           BoxShadow(
             color: FoodtrackColors.noirBrule,
@@ -397,97 +597,155 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (categoryIndex > 0) const SizedBox(height: 20),
+              // Category header
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
                     Container(
-                      width: 8,
-                      height: 8,
+                      width: 6,
+                      height: 24,
                       decoration: BoxDecoration(
-                        color: FoodtrackColors.jauneMoutarde,
-                        borderRadius: BorderRadius.circular(4),
+                        color: _accentColor,
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Text(
                       category.toUpperCase(),
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: FoodtrackColors.noirBrule,
                         letterSpacing: 1.2,
                       ),
                     ),
                   ],
                 ),
               ),
-              ...items.map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.name,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: item.isAvailable
-                                      ? Colors.white
-                                      : Colors.white.withOpacity(0.4),
-                                  decoration: item.isAvailable
-                                      ? TextDecoration.none
-                                      : TextDecoration.lineThrough,
-                                ),
-                              ),
-                              if (item.description != null &&
-                                  item.description!.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  item.description!,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400,
-                                    color: item.isAvailable
-                                        ? Colors.white.withOpacity(0.7)
-                                        : Colors.white.withOpacity(0.3),
-                                    fontStyle: FontStyle.italic,
+              // Menu items
+              ...items.map(
+                (item) => Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: item.isAvailable
+                        ? FoodtrackColors.cremeVintage
+                        : FoodtrackColors.cremeVintage.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: item.isAvailable
+                          ? FoodtrackColors.noirBrule.withOpacity(0.3)
+                          : FoodtrackColors.noirBrule.withOpacity(0.15),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Item details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                if (!item.isAvailable)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: FoodtrackColors.rougeKetchup
+                                            .withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        'INDISPONIBLE',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          color: FoodtrackColors.rougeKetchup,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: Text(
+                                    item.name,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: item.isAvailable
+                                          ? FoodtrackColors.noirBrule
+                                          : FoodtrackColors.noirBrule
+                                                .withOpacity(0.4),
+                                      decoration: item.isAvailable
+                                          ? TextDecoration.none
+                                          : TextDecoration.lineThrough,
+                                    ),
                                   ),
                                 ),
                               ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: item.isAvailable
-                                ? FoodtrackColors.vertPickle
-                                : FoodtrackColors.noirBrule.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            item.priceFormatted,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: item.isAvailable
-                                  ? FoodtrackColors.cremeVintage
-                                  : FoodtrackColors.cremeVintage.withOpacity(0.5),
                             ),
+                            if (item.description != null &&
+                                item.description!.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                item.description!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: item.isAvailable
+                                      ? FoodtrackColors.noirBrule.withOpacity(
+                                          0.6,
+                                        )
+                                      : FoodtrackColors.noirBrule.withOpacity(
+                                          0.3,
+                                        ),
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Price
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: item.isAvailable
+                              ? _accentColor
+                              : FoodtrackColors.noirBrule.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: FoodtrackColors.noirBrule,
+                            width: 1.5,
                           ),
                         ),
-                      ],
-                    ),
-                  )),
+                        child: Text(
+                          item.priceFormatted,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: item.isAvailable
+                                ? FoodtrackColors.cremeVintage
+                                : FoodtrackColors.noirBrule.withOpacity(0.4),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -511,10 +769,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: FoodtrackColors.noirBrule,
-          width: 3,
-        ),
+        border: Border.all(color: FoodtrackColors.noirBrule, width: 3),
         boxShadow: const [
           BoxShadow(
             color: FoodtrackColors.noirBrule,
@@ -528,21 +783,18 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
         itemBuilder: (context, index) {
           final (dayName, dayKey) = days[index];
           final hours = widget.foodtruck.openingHours?[dayKey];
-          final isToday = widget.foodtruck.isCurrentlyOpen;
-          final currentDayOfWeek = DateTime.now().weekday - 1; // 0 = Monday
+          final currentDayOfWeek = DateTime.now().weekday - 1;
           final isCurrentDay = index == currentDayOfWeek;
 
           return Container(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: isCurrentDay
-                  ? FoodtrackColors.vertPickle
-                  : FoodtrackColors.cremeVintage,
+              color: isCurrentDay ? _accentColor : FoodtrackColors.cremeVintage,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: FoodtrackColors.noirBrule,
-                width: 2,
+                width: isCurrentDay ? 2 : 1.5,
               ),
               boxShadow: isCurrentDay
                   ? const [
@@ -555,94 +807,78 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                   : null,
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    if (isCurrentDay) ...[
-                      Container(
-                        width: 8,
-                        height: 8,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: const BoxDecoration(
-                          color: FoodtrackColors.cremeVintage,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                    Text(
-                      dayName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: isCurrentDay
-                            ? FoodtrackColors.cremeVintage
-                            : FoodtrackColors.noirBrule,
-                      ),
+                // Day indicator
+                if (isCurrentDay)
+                  Container(
+                    width: 6,
+                    height: 6,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: const BoxDecoration(
+                      color: FoodtrackColors.cremeVintage,
+                      shape: BoxShape.circle,
                     ),
-                    if (isCurrentDay && isToday) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: FoodtrackColors.cremeVintage,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          isToday ? 'OUVERT' : 'FERME',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: FoodtrackColors.vertPickle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                Text(
-                  hours != null
-                      ? '${hours.openTime} - ${hours.closeTime}'
-                      : 'Ferme',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isCurrentDay
-                        ? FoodtrackColors.cremeVintage
-                        : FoodtrackColors.noirBrule.withOpacity(0.8),
+                  ),
+                // Day name
+                SizedBox(
+                  width: 80,
+                  child: Text(
+                    dayName,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: isCurrentDay
+                          ? FoodtrackColors.cremeVintage
+                          : FoodtrackColors.noirBrule,
+                    ),
                   ),
                 ),
+                // Hours
+                Expanded(
+                  child: Text(
+                    hours != null
+                        ? '${hours.openTime} - ${hours.closeTime}'
+                        : 'Ferme',
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isCurrentDay
+                          ? FoodtrackColors.cremeVintage
+                          : hours != null
+                          ? FoodtrackColors.noirBrule
+                          : FoodtrackColors.noirBrule.withOpacity(0.4),
+                    ),
+                  ),
+                ),
+                // "Aujourd'hui" badge
+                if (isCurrentDay) ...[
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: FoodtrackColors.cremeVintage,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      "AUJOURD'HUI",
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: _accentColor,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           );
         },
       ),
     );
-  }
-
-  Color _getAccentColor() {
-    switch (widget.foodtruck.cuisineType?.toLowerCase()) {
-      case 'burger':
-        return FoodtrackColors.rougeKetchup;
-      case 'tacos':
-        return FoodtrackColors.vertPickle;
-      case 'pizza':
-        return FoodtrackColors.jauneMoutarde;
-      case 'french':
-        return FoodtrackColors.noirBrule;
-      case 'crepes':
-        return FoodtrackColors.jauneMoutarde;
-      case 'falafel':
-        return FoodtrackColors.vertPickle;
-      case 'asian':
-        return FoodtrackColors.rougeKetchup;
-      case 'bbq':
-        return FoodtrackColors.rougeKetchup;
-      default:
-        return FoodtrackColors.rougeKetchup;
-    }
   }
 }

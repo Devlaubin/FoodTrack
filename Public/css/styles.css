@@ -1,0 +1,213 @@
+/* ===== Shared Styles — FoodTrack ===== */
+
+/* --- Neo-brutalist Base --- */
+.neo-card {
+  border: 3px solid #212121;
+  border-radius: 1.5rem;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+.neo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px #212121;
+}
+
+.neo-input {
+  border: 3px solid #212121;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  outline: none;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+.neo-input:focus {
+  background-color: #fdf6ec;
+  box-shadow: 3px 3px 0px #212121;
+}
+
+.neo-btn {
+  border: 3px solid #212121;
+  border-radius: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.neo-btn:hover {
+  transform: translate(3px, 3px);
+  box-shadow: none !important;
+}
+
+/* --- Custom Scrollbar --- */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #fdf6ec;
+  border-left: 2px solid #212121;
+}
+::-webkit-scrollbar-thumb {
+  background: #212121;
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d32f2f;
+}
+
+/* --- Animations --- */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes stamp {
+  0% {
+    transform: scale(3) rotate(-15deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(3deg);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 2s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.animate-pop-in {
+  animation: popIn 0.4s ease forwards;
+}
+
+/* --- Reveal animations on scroll --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Mobile menu --- */
+.mobile-menu-open {
+  overflow: hidden;
+}
+
+/* --- Staggered grid items --- */
+.stagger-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stagger-item.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Pulse dot for live feed --- */
+.live-dot {
+  width: 10px;
+  height: 10px;
+  background: #d32f2f;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
+}
+
+/* --- Loading spinner --- */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #fdf6ec;
+  border-top: 3px solid #212121;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Strictly Brutalist Button Reset --- */
+button,
+.btn-reset {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}

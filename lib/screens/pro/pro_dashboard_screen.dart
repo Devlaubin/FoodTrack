@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
+import 'package:foodtruck_app/domain/foodtruck_icons.dart';
 import 'package:foodtruck_app/domain/menu_item.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/services/pro_service.dart';
@@ -96,17 +97,97 @@ class _ProDashboardScreenState extends State<ProDashboardScreen>
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: const [
-                    _InfoAndGpsTab(),
-                    _MenuTab(),
-                    _HoursTab(),
-                  ],
+                  children: const [_InfoAndGpsTab(), _MenuTab(), _HoursTab()],
                 ),
               ),
             ],
           );
         },
       ),
+    );
+  }
+}
+
+/// Reusable icon picker widget for selecting a foodtruck logo.
+class _IconPicker extends StatelessWidget {
+  const _IconPicker({
+    required this.selectedIconId,
+    required this.onIconSelected,
+  });
+
+  final String? selectedIconId;
+  final ValueChanged<String> onIconSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Choisis ton logo',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: FoodtrackColors.noirBrule,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          // Limit height to about 3 rows of icons
+          height: 150,
+          child: SingleChildScrollView(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: foodtruckIcons.map((fi) {
+                final isSelected = fi.id == selectedIconId;
+                return GestureDetector(
+                  onTap: () => onIconSelected(fi.id),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? FoodtrackColors.rougeKetchup
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: FoodtrackColors.noirBrule,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          fi.icon,
+                          size: 20,
+                          color: isSelected
+                              ? FoodtrackColors.cremeVintage
+                              : FoodtrackColors.noirBrule,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          fi.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? FoodtrackColors.cremeVintage
+                                : FoodtrackColors.noirBrule,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -119,15 +200,44 @@ class _CreateFoodtruckForm extends StatefulWidget {
 }
 
 class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
+  int _currentStep = 0;
   final _nameController = TextEditingController();
   final _cuisineController = TextEditingController();
+  String? _selectedIconId;
   bool _isSubmitting = false;
+
+  static const int _totalSteps = 3;
 
   @override
   void dispose() {
     _nameController.dispose();
     _cuisineController.dispose();
     super.dispose();
+  }
+
+  bool get _canGoNext {
+    switch (_currentStep) {
+      case 0:
+        return _nameController.text.trim().isNotEmpty;
+      case 1:
+        return _selectedIconId != null;
+      case 2:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  void _nextStep() {
+    if (_currentStep < _totalSteps - 1) {
+      setState(() => _currentStep++);
+    }
+  }
+
+  void _prevStep() {
+    if (_currentStep > 0) {
+      setState(() => _currentStep--);
+    }
   }
 
   Future<void> _submit() async {
@@ -138,12 +248,17 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
     final ownerId = context.read<AuthService>().user?.id;
     if (ownerId != null) {
       await context.read<ProService>().createMyFoodtruck(
-            ownerId: ownerId,
-            name: _nameController.text.trim(),
-            cuisineType: _cuisineController.text.trim().isEmpty
-                ? null
-                : _cuisineController.text.trim(),
-          );
+        ownerId: ownerId,
+        name: _nameController.text.trim(),
+        cuisineType: _cuisineController.text.trim().isEmpty
+            ? null
+            : _cuisineController.text.trim(),
+      );
+
+      // If an icon was selected, update it after creation
+      if (_selectedIconId != null) {
+        await context.read<ProService>().updateInfo(imageUrl: _selectedIconId);
+      }
     }
 
     if (mounted) setState(() => _isSubmitting = false);
@@ -156,6 +271,7 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Header
           const Text(
             'Cree ta fiche foodtruck',
             style: TextStyle(
@@ -167,53 +283,355 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
           const SizedBox(height: 8),
           Text(
             'Ceci te permettra d\'apparaitre sur la carte et de gerer ton menu.',
-            style: TextStyle(
-              color: FoodtrackColors.noirBrule.withOpacity(0.7),
-            ),
+            style: TextStyle(color: FoodtrackColors.noirBrule.withOpacity(0.7)),
           ),
           const SizedBox(height: 20),
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Nom du foodtruck',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _cuisineController,
-            decoration: const InputDecoration(
-              labelText: 'Type de cuisine (ex: burger, tacos...)',
-              border: OutlineInputBorder(),
-            ),
+
+          // Step indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_totalSteps, (index) {
+              final isActive = index == _currentStep;
+              final isCompleted = index < _currentStep;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isCompleted
+                          ? FoodtrackColors.vertPickle
+                          : isActive
+                              ? FoodtrackColors.rougeKetchup
+                              : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: FoodtrackColors.noirBrule,
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: isCompleted
+                          ? const Icon(
+                              Icons.check,
+                              color: FoodtrackColors.cremeVintage,
+                              size: 20,
+                            )
+                          : Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: isActive
+                                    ? FoodtrackColors.cremeVintage
+                                    : FoodtrackColors.noirBrule,
+                              ),
+                            ),
+                    ),
+                  ),
+                  if (index < _totalSteps - 1)
+                    Container(
+                      width: 40,
+                      height: 2,
+                      color: index < _currentStep
+                          ? FoodtrackColors.vertPickle
+                          : FoodtrackColors.noirBrule.withOpacity(0.2),
+                    ),
+                ],
+              );
+            }),
           ),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _isSubmitting ? null : _submit,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: FoodtrackColors.rougeKetchup,
-              foregroundColor: FoodtrackColors.cremeVintage,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+
+          // Step labels
+          Center(
+            child: Text(
+              _stepLabel,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: FoodtrackColors.noirBrule,
               ),
             ),
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: FoodtrackColors.cremeVintage,
-                      strokeWidth: 2,
+          ),
+          const SizedBox(height: 16),
+
+          // Step content
+          _buildStepContent(),
+          const SizedBox(height: 24),
+
+          // Navigation buttons
+          Row(
+            children: [
+              if (_currentStep > 0)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _prevStep,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: FoodtrackColors.noirBrule,
+                      side: const BorderSide(
+                        color: FoodtrackColors.noirBrule,
+                        width: 2,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                  )
-                : const Text(
-                    'Creer',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    icon: const Icon(Icons.arrow_back, size: 18),
+                    label: const Text(
+                      'Precedent',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
+                ),
+              if (_currentStep > 0) const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _currentStep == _totalSteps - 1
+                      ? (_isSubmitting ? null : _submit)
+                      : (_canGoNext ? _nextStep : null),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FoodtrackColors.rougeKetchup,
+                    foregroundColor: FoodtrackColors.cremeVintage,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: FoodtrackColors.cremeVintage,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _currentStep == _totalSteps - 1
+                                  ? 'Creer'
+                                  : 'Suivant',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (_currentStep < _totalSteps - 1) ...[
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward, size: 18),
+                            ],
+                          ],
+                        ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  String get _stepLabel {
+    switch (_currentStep) {
+      case 0:
+        return 'Étape 1 : Nom & Type de cuisine';
+      case 1:
+        return 'Étape 2 : Choisis ton logo';
+      case 2:
+        return 'Étape 3 : Resume et creation';
+      default:
+        return '';
+    }
+  }
+
+  Widget _buildStepContent() {
+    switch (_currentStep) {
+      case 0:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: FoodtrackColors.noirBrule,
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Informations de base',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _nameController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      labelText: 'Nom du foodtruck *',
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: FoodtrackColors.rougeKetchup,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _cuisineController,
+                    decoration: InputDecoration(
+                      labelText: 'Type de cuisine (ex: burger, tacos...)',
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: FoodtrackColors.rougeKetchup,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      case 1:
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: FoodtrackColors.noirBrule,
+              width: 2,
+            ),
+          ),
+          child: _IconPicker(
+            selectedIconId: _selectedIconId,
+            onIconSelected: (id) {
+              setState(() => _selectedIconId = id);
+            },
+          ),
+        );
+      case 2:
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: FoodtrackColors.noirBrule,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.check_circle,
+                      color: FoodtrackColors.vertPickle, size: 24),
+                  SizedBox(width: 8),
+                  Text(
+                    'Resume de ta fiche',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _resumeRow('Nom', _nameController.text.trim()),
+              const Divider(height: 20),
+              _resumeRow(
+                'Type de cuisine',
+                _cuisineController.text.trim().isEmpty
+                    ? 'Non specifie'
+                    : _cuisineController.text.trim(),
+              ),
+              const Divider(height: 20),
+              _resumeRow(
+                'Logo',
+                _selectedIconId != null
+                    ? foodtruckIcons
+                        .firstWhere((f) => f.id == _selectedIconId)
+                        .label
+                    : 'Aucun',
+                icon: _selectedIconId != null
+                    ? foodtruckIcons
+                        .firstWhere((f) => f.id == _selectedIconId)
+                        .icon
+                    : null,
+              ),
+            ],
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _resumeRow(String label, String value, {IconData? icon}) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: FoodtrackColors.noirBrule.withOpacity(0.7),
+            ),
+          ),
+        ),
+        if (icon != null) ...[
+          Icon(icon, size: 20, color: FoodtrackColors.rougeKetchup),
+          const SizedBox(width: 8),
+        ],
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: FoodtrackColors.noirBrule,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -247,15 +665,48 @@ class _InfoAndGpsTabState extends State<_InfoAndGpsTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    ft.name,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: FoodtrackColors.noirBrule,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: ft.isCurrentlyOpen
+                              ? FoodtrackColors.rougeKetchup
+                              : FoodtrackColors.noirBrule.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: FoodtrackColors.noirBrule,
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          ft.logoIcon,
+                          size: 24,
+                          color: ft.isCurrentlyOpen
+                              ? FoodtrackColors.cremeVintage
+                              : FoodtrackColors.noirBrule.withOpacity(0.3),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        ft.name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: FoodtrackColors.noirBrule,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
+                  _IconPicker(
+                    selectedIconId: ft.imageUrl,
+                    onIconSelected: (iconId) {
+                      pro.updateInfo(imageUrl: iconId);
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       const Text(
@@ -289,7 +740,10 @@ class _InfoAndGpsTabState extends State<_InfoAndGpsTab> {
                   : () async {
                       final error = await pro.updateLivePosition();
                       if (!mounted) return;
-                      setState(() => _positionMessage = error ?? 'Position mise a jour !');
+                      setState(
+                        () => _positionMessage =
+                            error ?? 'Position mise a jour !',
+                      );
                     },
               icon: pro.isUpdatingPosition
                   ? const SizedBox(
@@ -529,9 +983,9 @@ class _MenuTab extends StatelessWidget {
                             activeColor: FoodtrackColors.vertPickle,
                             onChanged: (value) {
                               context.read<ProService>().updateMenuItem(
-                                    item.id,
-                                    isAvailable: value,
-                                  );
+                                item.id,
+                                isAvailable: value,
+                              );
                             },
                           ),
                           IconButton(
@@ -545,7 +999,9 @@ class _MenuTab extends StatelessWidget {
                               size: 20,
                             ),
                             onPressed: () {
-                              context.read<ProService>().deleteMenuItem(item.id);
+                              context.read<ProService>().deleteMenuItem(
+                                item.id,
+                              );
                             },
                           ),
                         ],

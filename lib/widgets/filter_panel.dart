@@ -4,7 +4,9 @@ import 'package:foodtruck_app/theme/colors.dart';
 import 'package:provider/provider.dart';
 
 class FilterPanel extends StatefulWidget {
-  const FilterPanel({super.key});
+  const FilterPanel({super.key, this.showSearch = true});
+
+  final bool showSearch;
 
   @override
   State<FilterPanel> createState() => _FilterPanelState();
@@ -90,50 +92,52 @@ class _FilterPanelState extends State<FilterPanel> {
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              if (widget.showSearch) ...[
+                const SizedBox(height: 12),
 
-              // Search bar
-              Container(
-                decoration: BoxDecoration(
-                  color: FoodtrackColors.cremeVintage,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: FoodtrackColors.noirBrule,
-                    width: 2,
+                // Search bar
+                Container(
+                  decoration: BoxDecoration(
+                    color: FoodtrackColors.cremeVintage,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: FoodtrackColors.noirBrule,
+                      width: 2,
+                    ),
+                  ),
+                  child: TextField(
+                    onChanged: service.setSearchQuery,
+                    controller: _searchController,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Nom ou type de cuisine...',
+                      hintStyle: TextStyle(
+                        color: FoodtrackColors.noirBrule.withOpacity(0.4),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: FoodtrackColors.rougeKetchup,
+                      ),
+                      suffixIcon: service.searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                color: FoodtrackColors.noirBrule,
+                              ),
+                              onPressed: () => service.setSearchQuery(''),
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
-                child: TextField(
-                  onChanged: service.setSearchQuery,
-                  controller: _searchController,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: FoodtrackColors.noirBrule,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Nom ou type de cuisine...',
-                    hintStyle: TextStyle(
-                      color: FoodtrackColors.noirBrule.withOpacity(0.4),
-                      fontWeight: FontWeight.w500,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: FoodtrackColors.rougeKetchup,
-                    ),
-                    suffixIcon: service.searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(
-                              Icons.close,
-                              color: FoodtrackColors.noirBrule,
-                            ),
-                            onPressed: () => service.setSearchQuery(''),
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
+              ],
 
               // Open now filter
               GestureDetector(

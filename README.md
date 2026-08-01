@@ -1,4 +1,4 @@
-# FoodTrack 🍔🗺️
+# FoodTrack
 
 **FoodTrack** est une application Flutter open source qui te permet de **localiser les food trucks partout en France**, découvrir leurs menus et suivre l’activité “du grill” en temps réel.
 
@@ -6,7 +6,7 @@
 
 ---
 
-## ✨ Démarrer rapidement
+## Démarrer rapidement
 
 - Une app mobile **Flutter**
 - Une carte **OpenStreetMap** (via `flutter_map`)
@@ -16,13 +16,13 @@
 
 ---
 
-## 🚀 Fonctionnalités
+## Fonctionnalités
 
 ### Image
 
 ![scrennshot](img/image.png)
 
-### 👥 Pour les utilisateurs
+### Pour les utilisateurs
 
 - **Carte interactive** des food trucks
 - **Recherche** + **filtres** (ouverts maintenant, type, etc.)
@@ -30,7 +30,7 @@
 - **Avis** et **favoris**
 - **Itinéraire GPS** (au minimum via deep-link)
 
-### 🧑‍🍳 Pour les propriétaires (Pro)
+### Pour les propriétaires (Pro)
 
 - Compte professionnel
 - Position GPS **en temps réel**
@@ -40,7 +40,7 @@
 
 ---
 
-## 🧱 Direction Artistique (DA)
+## Direction Artistique (DA)
 
 L’interface suit une direction claire :
 
@@ -53,7 +53,7 @@ Objectif : une UI lisible, performante et pleine de personnalité.
 
 ---
 
-## 🗺️ Stack technique
+## Stack technique
 
 ### Frontend
 
@@ -79,7 +79,7 @@ Objectif : une UI lisible, performante et pleine de personnalité.
 
 ---
 
-## 🧭 Roadmap (par phases)
+## Roadmap (par phases)
 
 ### V1 — Les bases qui font plaisir
 
@@ -106,7 +106,7 @@ Objectif : une UI lisible, performante et pleine de personnalité.
 
 ---
 
-## ✅ Ce qui est déjà prévu / structuré
+## Ce qui est déjà prévu / structuré
 
 - Architecture Flutter orientée **Clean Architecture**
 - Écrans de base : Splash → Home, connexion & inscription
@@ -120,7 +120,7 @@ Objectif : une UI lisible, performante et pleine de personnalité.
 
 ---
 
-## 📁 Arborescence (repère)
+## Arborescence (repère)
 
 ```text
 foodtruck-france/
@@ -135,7 +135,7 @@ foodtruck-france/
 
 ---
 
-## 🧑‍💻 Contribuer
+## Contribuer
 
 FoodTrack est open source : tu peux contribuer aux écrans, au backend, aux performances et à la direction artistique.
 
@@ -146,6 +146,6 @@ FoodTrack est open source : tu peux contribuer aux écrans, au backend, aux perf
 
 ---
 
-## 📄 Licence
+## Licence
 
 **MIT** — voir le fichier `LICENSE`.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodtruck_app/domain/user_profile.dart';
-import 'package:foodtruck_app/main.dart';
+import 'package:foodtruck_app/screens/food_radar_home.dart';
 import 'package:foodtruck_app/screens/profile_screen.dart';
 import 'package:foodtruck_app/screens/pro/pro_dashboard_screen.dart';
 import 'package:foodtruck_app/services/auth_service.dart';

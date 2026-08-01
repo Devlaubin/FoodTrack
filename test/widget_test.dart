@@ -110,7 +110,7 @@ void main() {
     await tester.tap(find.text('Se connecter'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Radar a food'), findsOneWidget);
+    expect(find.text('Foodtrack'), findsOneWidget);
     expect(find.text('Le grill est en route'), findsOneWidget);
   });
 }

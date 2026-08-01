@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ===== SEO & Meta ===== -->
+    <title>FoodTrack</title>
+    <meta
+      name="description"
+      content="Application rétro et chaleureuse pour géolocaliser les food trucks en temps réel, consulter leurs menus et profiter de la carte de fidélité. Rejoignez l'aventure !"
+    />
+    <meta
+      name="keywords"
+      content="food truck, application, géolocalisation, street food, burgers, France, camion gourmand"
+    />
+    <meta name="author" content="FoodTrack" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="FoodTrack — Trouve ton Food Truck pret de toi"
+    />
+    <meta
+      property="og:description"
+      content="Géolocalise les camions gourmands en temps réel, consulte leurs menus et ne rien rater !"
+    />
+    <meta property="og:image" content="assets/Logo.png" />
+    <meta property="og:url" content="https://foodtrack.app" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FoodTrack" />
+    <meta
+      name="twitter:description"
+      content="Géolocalise les camions gourmands en temps réel !"
+    />
+    <meta name="twitter:image" content="assets/Logo.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/Logo.png" />
+
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              creme: "#FDF6EC",
+              ketchup: "#D32F2F",
+              moutarde: "#FBC02D",
+              pickle: "#388E3C",
+              noir: "#212121",
+            },
+            fontFamily: {
+              title: ['"Bowlby One"', "cursive"],
+              body: ['"Plus Jakarta Sans"', "sans-serif"],
+            },
+            boxShadow: {
+              brutal: "5px 5px 0px #212121",
+              "brutal-lg": "8px 8px 0px #212121",
+              "brutal-hover": "2px 2px 0px #212121",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-creme text-noir font-body antialiased selection:bg-moutarde selection:text-noir"
+  >
+    <!-- ===== NAVIGATION ===== -->
+    <nav
+      class="max-w-6xl mx-auto px-6 py-6 flex justify-between items-center relative z-50"
+    >
+      <a href="/" class="flex items-center gap-3">
+        <img
+          src="assets/Logo.png"
+          alt="Logo FoodTrack"
+          class="w-10 h-10 md:w-12 md:h-12 animate-float"
+        />
+      </a>
+
+      <!-- Desktop nav -->
+      <div class="hidden md:flex gap-8 font-bold">
+        <a href="#features" class="hover:text-ketchup transition-colors"
+          >Fonctionnalités</a
+        >
+        <a href="#live" class="hover:text-ketchup transition-colors"
+          >En direct</a
+        >
+        <a href="#pro" class="hover:text-ketchup transition-colors"
+          >Espace Pro</a
+        >
+        <a href="#stack" class="hover:text-ketchup transition-colors"
+          >Stack Tech</a
+        >
+        <a href="auth.html" class="hover:text-ketchup transition-colors"
+          >Connexion</a
+        >
+      </div>
+
+      <!-- Right CTA desktop -->
+      <div class="hidden md:flex items-center gap-4">
+        <a
+          href="auth.html"
+          class="neo-card bg-moutarde px-5 py-2.5 font-bold shadow-brutal hover:translate-x-1 hover:translate-y-1 hover:shadow-brutal-hover transition-all text-sm"
+        >
+          Rejoins nous
+        </a>
+      </div>
+
+      <!-- Hamburger mobile -->
+      <button
+        id="hamburger-btn"
+        class="md:hidden neo-card bg-white p-3 shadow-brutal"
+        aria-label="Menu mobile"
+      >
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden fixed inset-0 bg-creme z-40 pt-24 px-6">
+      <div class="flex flex-col gap-4 text-center">
+        <a
+          href="#features"
+          class="neo-card bg-white p-4 font-title text-xl shadow-brutal"
+          >Fonctionnalités</a
+        >
+        <a
+          href="#live"
+          class="neo-card bg-white p-4 font-title text-xl shadow-brutal"
+          >En direct du grill</a
+        >
+        <a
+          href="#pro"
+          class="neo-card bg-white p-4 font-title text-xl shadow-brutal"
+          >Espace Pro</a
+        >
+        <a
+          href="#stack"
+          class="neo-card bg-white p-4 font-title text-xl shadow-brutal"
+          >Stack Tech</a
+        >
+        <a
+          href="#testimonials"
+          class="neo-card bg-white p-4 font-title text-xl shadow-brutal"
+          >Avis</a
+        >
+        <hr class="border-2 border-noir my-2" />
+        <a
+          href="auth.html"
+          class="neo-card bg-moutarde p-4 font-title text-xl shadow-brutal"
+          >Connexion</a
+        >
+        <a
+          href="auth.html?register=1"
+          class="neo-card bg-ketchup text-white p-4 font-title text-xl shadow-brutal"
+          >Créer un compte</a
+        >
+      </div>
+    </div>
+
+    <!-- ===== HERO ===== -->
+    <header
+      class="max-w-6xl mx-auto px-6 py-12 md:py-16 text-center md:text-left flex flex-col md:flex-row items-center gap-12 parallax-container"
+    >
+      <div class="md:w-1/2 space-y-6 reveal">
+        <div
+          class="inline-block neo-card bg-pickle text-white px-4 py-1.5 font-bold text-sm shadow-brutal -rotate-2 animate-wiggle"
+        >
+          Devlaubin's App
+        </div>
+        <h1 class="font-title text-4xl md:text-6xl leading-tight">
+          Trouve ton Food Truck préféré
+          <span class="text-ketchup">partout en France !</span>
+        </h1>
+        <p class="text-lg font-medium text-gray-800">
+          Une application rétro, chaleureuse et collaborative pour géolocaliser
+          les camions gourmands en temps réel, consulter leurs menus et ne rien
+          rater.
+        </p>
+
+        <!-- Stats mini -->
+        <div class="flex gap-6 justify-center md:justify-start pt-2">
+          <div>
+            <p
+              class="font-title text-2xl count-up"
+              data-target="150"
+              data-suffix="+"
+            >
+              0+
+            </p>
+            <p class="text-xs font-bold">Food Trucks</p>
+          </div>
+          <div>
+            <p
+              class="font-title text-2xl count-up"
+              data-target="25"
+              data-suffix=" villes"
+            >
+              0 villes
+            </p>
+            <p class="text-xs font-bold">Partout en France</p>
+          </div>
+          <div>
+            <p
+              class="font-title text-2xl count-up"
+              data-target="98"
+              data-suffix="%"
+            >
+              0%
+            </p>
+            <p class="text-xs font-bold">Satisfaction</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4 pt-4 justify-center md:justify-start">
+          <a
+            href="#download"
+            class="neo-card bg-ketchup text-white px-8 py-4 font-bold text-lg shadow-brutal hover:translate-x-1 hover:translate-y-1 hover:shadow-brutal-hover transition-all"
+          >
+            Télécharger l'App ici
+          </a>
+          <a
+            href="#pro"
+            class="neo-card bg-white px-8 py-4 font-bold text-lg shadow-brutal hover:translate-x-1 hover:translate-y-1 hover:shadow-brutal-hover transition-all"
+          >
+            Vous êtes gérant ?
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero card / mockup -->
+      <div
+        class="md:w-1/2 flex justify-center reveal"
+        style="transition-delay: 0.2s"
+      ></div>
+    </header>
+
+    <!-- ===== STATS BANNER ===== -->
+    <section class="max-w-6xl mx-auto px-6 py-8 reveal">
+      <div class="neo-card bg-noir text-white p-6 shadow-brutal-lg">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div>
+            <p class="font-title text-3xl">🍔</p>
+            <p class="font-bold text-sm mt-1">Burgers & Tacos</p>
+          </div>
+          <div>
+            <p class="font-title text-3xl">🥗</p>
+            <p class="font-bold text-sm mt-1">Salades & Bowl</p>
+          </div>
+          <div>
+            <p class="font-title text-3xl">🌮</p>
+            <p class="font-bold text-sm mt-1">Cuisine du Monde</p>
+          </div>
+          <div>
+            <p class="font-title text-3xl">🥐</p>
+            <p class="font-bold text-sm mt-1">Food Trucks Français</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FEATURES ===== -->
+    <section id="features" class="max-w-6xl mx-auto px-6 py-16">
+      <h2 class="font-title text-3xl md:text-4xl text-center mb-4 reveal">
+        Pourquoi vous allez l'adorer ❤️
+      </h2>
+      <p class="text-center font-bold text-gray-600 mb-12 reveal">
+        L'appli qui rend la street food encore plus savoureuse
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div
+          class="neo-card p-6 shadow-brutal bg-white hover:-translate-y-1 transition-all stagger-item"
+          data-delay="0"
+        >
+          <div
+            class="w-14 h-14 neo-card bg-moutarde flex items-center justify-center text-2xl mb-4 shadow-brutal"
+          >
+            🗺️
+          </div>
+          <h3 class="font-title text-xl mb-2">Carte Temps Réel</h3>
+          <p class="font-medium text-gray-700">
+            Visualisez instantanément les food trucks ouverts autour de vous
+            grâce à notre carte OpenStreetMap intégrée.
+          </p>
+        </div>
+
+        <div
+          class="neo-card p-6 shadow-brutal bg-white hover:-translate-y-1 transition-all stagger-item"
+          data-delay="100"
+        >
+          <div
+            class="w-14 h-14 neo-card bg-ketchup text-white flex items-center justify-center text-2xl mb-4 shadow-brutal"
+          >
+            📜
+          </div>
+          <h3 class="font-title text-xl mb-2">Menus Façon Ardoise</h3>
+          <p class="font-medium text-gray-700">
+            Découvrez les plats du jour, les ruptures de stock et les offres
+            spéciales directement publiées par les chefs.
+          </p>
+        </div>
+
+        <div
+          class="neo-card p-6 shadow-brutal bg-white hover:-translate-y-1 transition-all stagger-item"
+          data-delay="200"
+        >
+          <div
+            class="w-14 h-14 neo-card bg-pickle text-white flex items-center justify-center text-2xl mb-4 shadow-brutal"
+          >
+            🎟️
+          </div>
+          <h3 class="font-title text-xl mb-2">Carte de Fidélité</h3>
+          <p class="font-medium text-gray-700">
+            Tamponnez votre carte numérique lors de vos passages et débloquez
+            des repas gratuits !
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== EN DIRECT DU GRILL (NEW) ===== -->
+    <section id="live" class="max-w-6xl mx-auto px-6 py-16">
+      <div class="flex items-center gap-3 mb-8 reveal">
+        <span class="live-dot"></span>
+        <h2 class="font-title text-3xl md:text-4xl">En direct du grill 🔥</h2>
+      </div>
+      <p class="font-bold text-gray-600 mb-8 reveal">
+        Les dernières infos croustillantes de tes food trucks préférés
+      </p>
+
+      <div class="space-y-4">
+        <!-- Post 1 -->
+        <div
+          class="neo-card p-5 shadow-brutal bg-white stagger-item flex items-start gap-4"
+          data-delay="0"
+        >
+          <div
+            class="w-12 h-12 neo-card bg-moutarde flex items-center justify-center text-xl shrink-0 shadow-brutal"
+          >
+            🧑‍🍳
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-title text-sm">Le Burger Chic</span>
+              <span
+                class="text-xs bg-ketchup text-white px-2 py-0.5 rounded-full font-bold"
+                >IL Y A 15 MIN</span
+              >
+            </div>
+            <p class="font-bold">
+              ⚠️ Rupture de stock sur le
+              <span class="text-ketchup">"Double Cheese Bacon"</span> ! Derniers
+              arrivages, dépêchez-vous 🏃‍♂️
+            </p>
+            <div class="flex gap-4 mt-2 text-xs font-bold text-gray-500">
+              <span>❤️ 24</span>
+              <span>💬 8</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post 2 -->
+        <div
+          class="neo-card p-5 shadow-brutal bg-white stagger-item flex items-start gap-4"
+          data-delay="100"
+        >
+          <div
+            class="w-12 h-12 neo-card bg-pickle text-white flex items-center justify-center text-xl shrink-0 shadow-brutal"
+          >
+            🌮
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-title text-sm">Tacos del Sol</span>
+              <span
+                class="text-xs bg-ketchup text-white px-2 py-0.5 rounded-full font-bold"
+                >IL Y A 42 MIN</span
+              >
+            </div>
+            <p class="font-bold">
+              📍 Nouveau spot ! Je suis
+              <span class="text-pickle">Place de la République</span>
+              aujourd'hui de 11h à 15h. Nouveaux tacos au pastor testés et
+              approuvés 🤤
+            </p>
+            <div class="flex gap-4 mt-2 text-xs font-bold text-gray-500">
+              <span>❤️ 56</span>
+              <span>💬 12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post 3 -->
+        <div
+          class="neo-card p-5 shadow-brutal bg-white stagger-item flex items-start gap-4"
+          data-delay="200"
+        >
+          <div
+            class="w-12 h-12 neo-card bg-ketchup text-white flex items-center justify-center text-xl shrink-0 shadow-brutal"
+          >
+            🥐
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-title text-sm">Crêpes & Co</span>
+              <span
+                class="text-xs bg-ketchup text-white px-2 py-0.5 rounded-full font-bold"
+                >IL Y A 1H</span
+              >
+            </div>
+            <p class="font-bold">
+              🎉 Édition limitée :
+              <span class="text-ketchup">Crêpe Suzette flambée</span> au Grand
+              Marnier ! Seulement ce week-end. Venez nombreux ! 🥞✨
+            </p>
+            <div class="flex gap-4 mt-2 text-xs font-bold text-gray-500">
+              <span>❤️ 128</span>
+              <span>💬 34</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TÉMOIGNAGES (NEW) ===== -->
+    <section id="testimonials" class="max-w-6xl mx-auto px-6 py-16">
+      <h2 class="font-title text-3xl md:text-4xl text-center mb-4 reveal">
+        Ils ont testé, ils kiffent ⭐
+      </h2>
+      <p class="text-center font-bold text-gray-600 mb-12 reveal">
+        La communauté FoodTrack en parle mieux que nous
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div
+          class="neo-card p-6 shadow-brutal bg-white stagger-item"
+          data-delay="0"
+        >
+          <div class="flex items-center gap-1 text-moutarde mb-3">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i
+            ><i class="fas fa-star"></i><i class="fas fa-star"></i
+            ><i class="fas fa-star"></i>
+          </div>
+          <p class="font-bold mb-3">
+            "J'ai trouvé LE meilleur camion de tacos grâce à l'appli. La carte
+            en temps réel c'est un game changer !"
+          </p>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-8 h-8 neo-card bg-moutarde flex items-center justify-center text-sm"
+            >
+              👩
+            </div>
+            <div>
+              <p class="font-bold text-xs">Marie L.</p>
+              <p class="text-xs text-gray-500">Utilisatrice depuis 3 mois</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="neo-card p-6 shadow-brutal bg-white stagger-item"
+          data-delay="100"
+        >
+          <div class="flex items-center gap-1 text-moutarde mb-3">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i
+            ><i class="fas fa-star"></i><i class="fas fa-star"></i
+            ><i class="fas fa-star"></i>
+          </div>
+          <p class="font-bold mb-3">
+            "En tant que food trucker, l'appli m'a permis de multiplier ma
+            clientèle. Le fil En Direct du Grill est top !"
+          </p>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-8 h-8 neo-card bg-ketchup text-white flex items-center justify-center text-sm"
+            >
+              🧑‍🍳
+            </div>
+            <div>
+              <p class="font-bold text-xs">Kevin, Burger Chic</p>
+              <p class="text-xs text-gray-500">Food Trucker pro</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="neo-card p-6 shadow-brutal bg-white stagger-item"
+          data-delay="200"
+        >
+          <div class="flex items-center gap-1 text-moutarde mb-3">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i
+            ><i class="fas fa-star"></i><i class="fas fa-star"></i
+            ><i class="fas fa-star-half-alt"></i>
+          </div>
+          <p class="font-bold mb-3">
+            "La carte de fidélité numérique c'est l'idée du siècle. Je
+            collectionne les tampons comme un jeu !"
+          </p>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-8 h-8 neo-card bg-pickle text-white flex items-center justify-center text-sm"
+            >
+              👨
+            </div>
+            <div>
+              <p class="font-bold text-xs">Antoine D.</p>
+              <p class="text-xs text-gray-500">Étudiant gourmand</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION PRO ===== -->
+    <section id="pro" class="max-w-6xl mx-auto px-6 py-16">
+      <div
+        class="neo-card bg-moutarde p-8 md:p-12 shadow-brutal-lg flex flex-col md:flex-row items-center gap-8 reveal"
+      >
+        <div class="md:w-2/3 space-y-4">
+          <div
+            class="inline-block neo-card bg-noir text-white px-3 py-1 font-bold text-xs uppercase"
+          >
+            Espace Pro
+          </div>
+          <h2 class="font-title text-3xl md:text-4xl">
+            Vous possédez un Food Truck ?
+          </h2>
+          <p class="font-medium text-lg text-noir">
+            Prenez le contrôle de votre visibilité ! Partagez votre position GPS
+            exacte en temps réel, mettez à jour votre carte en 2 clics et
+            prévenez vos clients fidèles dès que le grill chauffe.
+          </p>
+          <ul class="space-y-2 font-bold text-sm">
+            <li>
+              ✓ Publication sur le fil
+              <span class="text-ketchup">"En direct du grill"</span>
+            </li>
+            <li>✓ Mise à jour des horaires et emplacements</li>
+            <li>✓ Gestion simplifiée de votre menu</li>
+            <li>✓ Statistiques de vues et d'engagement</li>
+          </ul>
+        </div>
+        <div class="md:w-1/3 text-center">
+          <a
+            href="auth.html?register=1"
+            class="inline-block neo-card bg-noir text-white px-6 py-4 font-bold text-lg shadow-brutal hover:bg-ketchup transition-colors"
+          >
+            Créer un compte Pro 🧑‍🍳
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TÉLÉCHARGEMENT (NEW) ===== -->
+    <section
+      id="download"
+      class="max-w-6xl mx-auto px-6 py-16 text-center reveal"
+    >
+      <h2 class="font-title text-3xl md:text-4xl mb-4">
+        Prêt à rejoindre l'aventure ? 🚀
+      </h2>
+      <p class="font-bold text-gray-600 mb-8">
+        Disponible très bientôt sur iOS et Android
+      </p>
+
+      <div class="flex flex-wrap justify-center gap-4">
+        <a
+          href="#"
+          class="neo-card bg-noir text-white px-8 py-4 font-bold text-lg shadow-brutal hover:bg-ketchup transition-colors inline-flex items-center gap-3"
+        >
+          <i class="fab fa-apple text-2xl"></i>
+          <span class="text-left">
+            <span class="text-xs font-normal block">Télécharger sur</span>
+            <span class="font-title">App Store</span>
+          </span>
+        </a>
+        <a
+          href="#"
+          class="neo-card bg-noir text-white px-8 py-4 font-bold text-lg shadow-brutal hover:bg-ketchup transition-colors inline-flex items-center gap-3"
+        >
+          <i class="fab fa-google-play text-2xl"></i>
+          <span class="text-left">
+            <span class="text-xs font-normal block">Télécharger sur</span>
+            <span class="font-title">Google Play</span>
+          </span>
+        </a>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="max-w-md mx-auto mt-10 reveal">
+        <p class="font-bold mb-3">🍔 Sois le premier informé du lancement :</p>
+        <form id="newsletter-form" class="flex gap-2">
+          <input
+            type="email"
+            required
+            placeholder="ton@email.fr"
+            class="neo-input flex-1 text-sm"
+          />
+          <button
+            type="submit"
+            class="neo-card bg-ketchup text-white px-5 py-2 font-bold shadow-brutal hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-sm shrink-0"
+          >
+            Je veux ! 🔥
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== STACK ===== -->
+    <section id="stack" class="max-w-6xl mx-auto px-6 py-16">
+      <h2 class="font-title text-3xl text-center mb-8 reveal">
+        Sous le capot 🛠️
+      </h2>
+      <p class="text-center font-bold text-gray-600 mb-8 reveal">
+        Une stack technique moderne pour une expérience au top
+      </p>
+      <div class="flex flex-wrap justify-center gap-4 reveal">
+        <span
+          class="neo-card bg-white px-4 py-2 font-bold shadow-brutal hover:bg-moutarde transition-colors"
+          >📱 Flutter & Dart</span
+        >
+        <span
+          class="neo-card bg-white px-4 py-2 font-bold shadow-brutal hover:bg-moutarde transition-colors"
+          >🗺️ OpenStreetMap</span
+        >
+        <span
+          class="neo-card bg-white px-4 py-2 font-bold shadow-brutal hover:bg-moutarde transition-colors"
+          >⚡ Node.js / Express</span
+        >
+        <span
+          class="neo-card bg-white px-4 py-2 font-bold shadow-brutal hover:bg-moutarde transition-colors"
+          >🐘 PostgreSQL + PostGIS</span
+        >
+        <span
+          class="neo-card bg-white px-4 py-2 font-bold shadow-brutal hover:bg-moutarde transition-colors"
+          >🔑 Supabase Auth</span
+        >
+        <span
+          class="neo-card bg-white px-4 py-2 font-bold shadow-brutal hover:bg-moutarde transition-colors"
+          >☁️ Supabase Storage</span
+        >
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="border-t-4 border-noir bg-white mt-8 py-10">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+          <!-- Brand -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <img src="assets/Logo.png" alt="" class="w-8 h-8" />
+              <span class="font-title text-lg">FoodTrack</span>
+            </div>
+            <p class="font-bold text-sm text-gray-600">
+              L'appli rétro-chaleureuse des food trucks de France 🇫🇷
+            </p>
+            <div class="flex gap-3 text-xl">
+              <a
+                href="#"
+                class="hover:text-ketchup transition-colors"
+                aria-label="Twitter"
+                ><i class="fab fa-twitter"></i
+              ></a>
+              <a
+                href="#"
+                class="hover:text-ketchup transition-colors"
+                aria-label="Instagram"
+                ><i class="fab fa-instagram"></i
+              ></a>
+              <a
+                href="#"
+                class="hover:text-ketchup transition-colors"
+                aria-label="GitHub"
+                ><i class="fab fa-github"></i
+              ></a>
+              <a
+                href="#"
+                class="hover:text-ketchup transition-colors"
+                aria-label="TikTok"
+                ><i class="fab fa-tiktok"></i
+              ></a>
+            </div>
+          </div>
+
+          <!-- Produit -->
+          <div>
+            <h4 class="font-title text-sm mb-3">🍔 Produit</h4>
+            <ul class="space-y-2 font-bold text-sm text-gray-600">
+              <li>
+                <a href="#features" class="hover:text-ketchup"
+                  >Fonctionnalités</a
+                >
+              </li>
+              <li><a href="#pro" class="hover:text-ketchup">Espace Pro</a></li>
+              <li>
+                <a href="#download" class="hover:text-ketchup">Télécharger</a>
+              </li>
+              <li>
+                <a href="#stack" class="hover:text-ketchup">Stack Tech</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Légal -->
+          <div>
+            <h4 class="font-title text-sm mb-3">📋 Légal</h4>
+            <ul class="space-y-2 font-bold text-sm text-gray-600">
+              <li>
+                <a href="#" class="hover:text-ketchup">Mentions légales</a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-ketchup"
+                  >Politique de confidentialité</a
+                >
+              </li>
+              <li><a href="#" class="hover:text-ketchup">CGU</a></li>
+              <li><a href="#" class="hover:text-ketchup">Cookies</a></li>
+            </ul>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h4 class="font-title text-sm mb-3">📮 Contact</h4>
+            <ul class="space-y-2 font-bold text-sm text-gray-600">
+              <li>
+                <a href="mailto:hello@foodtrack.app" class="hover:text-ketchup"
+                  >hello@foodtrack.app</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-ketchup">Documentation API</a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-ketchup">Signaler un bug</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="border-t-2 border-noir pt-6 flex flex-col md:flex-row justify-between items-center gap-4 font-bold text-sm text-gray-500"
+        >
+          <p>
+            🍔 FoodTrack — Projet Open Source
+            <span class="text-ketchup">(Licence MIT)</span>
+          </p>
+          <p>Fait avec ❤️ et beaucoup de 🧀 par la communauté</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="js/main.js"></script>
+  </body>
+</html>
