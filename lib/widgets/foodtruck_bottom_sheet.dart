@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:foodtruck_app/app/app_router.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
+import 'package:foodtruck_app/services/foodtruck_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
+import 'package:foodtruck_app/utils/formatters.dart';
+import 'package:foodtruck_app/widgets/star_rating.dart';
+import 'package:provider/provider.dart';
 
 void showFoodtruckBottomSheet(BuildContext context, FoodTruck foodtruck) {
   showModalBottomSheet(
@@ -28,6 +32,15 @@ class _FoodtruckBottomSheet extends StatelessWidget {
       default:
         return FoodtrackColors.rougeKetchup;
     }
+  }
+
+  /// Formats a distance in km nicely: "850 m" under 1 km, otherwise "1,2 km".
+  String _formatDistance(double km) {
+    if (km < 1) {
+      final meters = (km * 1000).round();
+      return '$meters m';
+    }
+    return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
   }
 
   @override
@@ -137,6 +150,41 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+                              // Rating + seniority
+                              if (foodtruck.reviewCount > 0) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    StarRating(
+                                      rating: foodtruck.averageRating,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${Formatters.rating(foodtruck.averageRating)} '
+                                      '(${foodtruck.reviewCount})',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800,
+                                        color: FoodtrackColors.noirBrule,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              if (foodtruck.proSince != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Membre FoodTrack depuis '
+                                  '${Formatters.monthYear(foodtruck.proSince!)}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: FoodtrackColors.noirBrule
+                                        .withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -165,8 +213,9 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: foodtruck.isCurrentlyOpen
                                       ? FoodtrackColors.cremeVintage
-                                      : FoodtrackColors.noirBrule
-                                          .withOpacity(0.4),
+                                      : FoodtrackColors.noirBrule.withOpacity(
+                                          0.4,
+                                        ),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -178,8 +227,9 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                                   fontWeight: FontWeight.w800,
                                   color: foodtruck.isCurrentlyOpen
                                       ? FoodtrackColors.cremeVintage
-                                      : FoodtrackColors.noirBrule
-                                          .withOpacity(0.5),
+                                      : FoodtrackColors.noirBrule.withOpacity(
+                                          0.5,
+                                        ),
                                 ),
                               ),
                             ],
@@ -237,6 +287,41 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                               ],
                             ),
                           ),
+                          // Distance from user (if location is active)
+                          Consumer<FoodtruckService>(
+                            builder: (context, service, child) {
+                              final km = service.distanceToFoodtruck(foodtruck);
+                              if (km == null) return const SizedBox.shrink();
+                              return Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (service.hasUserLocation) ...[
+                                    Container(
+                                      width: 1,
+                                      height: 20,
+                                      color: FoodtrackColors.noirBrule
+                                          .withOpacity(0.2),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Icon(
+                                      Icons.near_me,
+                                      size: 16,
+                                      color: FoodtrackColors.rougeKetchup,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _formatDistance(km),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: FoodtrackColors.noirBrule,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              );
+                            },
+                          ),
                           // Today's hours
                           if (foodtruck.getTodayHours() != null) ...[
                             Container(
@@ -260,8 +345,9 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                                 fontWeight: FontWeight.w700,
                                 color: foodtruck.isCurrentlyOpen
                                     ? FoodtrackColors.vertPickle
-                                    : FoodtrackColors.noirBrule
-                                        .withOpacity(0.6),
+                                    : FoodtrackColors.noirBrule.withOpacity(
+                                        0.6,
+                                      ),
                               ),
                             ),
                           ],
@@ -290,8 +376,9 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                             Icon(
                               Icons.format_quote,
                               size: 18,
-                              color: FoodtrackColors.rougeKetchup
-                                  .withOpacity(0.5),
+                              color: FoodtrackColors.rougeKetchup.withOpacity(
+                                0.5,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -300,8 +387,9 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
-                                  color: FoodtrackColors.noirBrule
-                                      .withOpacity(0.75),
+                                  color: FoodtrackColors.noirBrule.withOpacity(
+                                    0.75,
+                                  ),
                                   height: 1.4,
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -374,10 +462,7 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                               ),
                               elevation: 0,
                             ),
-                            icon: Icon(
-                              foodtruck.logoIcon,
-                              size: 18,
-                            ),
+                            icon: Icon(foodtruck.logoIcon, size: 18),
                             label: const Text(
                               'Voir la fiche',
                               style: TextStyle(
@@ -399,4 +484,3 @@ class _FoodtruckBottomSheet extends StatelessWidget {
     );
   }
 }
-

@@ -7,7 +7,15 @@ class FoodTruck {
     required this.id,
     required this.name,
     this.description,
+    this.bio,
     this.cuisineType,
+    this.phone,
+    this.serviceType,
+    this.socialInstagram,
+    this.socialFacebook,
+    this.socialTiktok,
+    this.socialX,
+    this.socialWebsite,
     required this.latitude,
     required this.longitude,
     this.isOpen = true,
@@ -15,12 +23,23 @@ class FoodTruck {
     this.openingHours,
     this.imageUrl,
     this.ownerId,
+    this.averageRating = 0,
+    this.reviewCount = 0,
+    this.proSince,
   });
 
   final String id;
   final String name;
   final String? description;
+  final String? bio;
   final String? cuisineType;
+  final String? phone;
+  final String? serviceType;
+  final String? socialInstagram;
+  final String? socialFacebook;
+  final String? socialTiktok;
+  final String? socialX;
+  final String? socialWebsite;
   final double latitude;
   final double longitude;
   final bool isOpen;
@@ -28,6 +47,9 @@ class FoodTruck {
   final Map<String, DayHours>? openingHours;
   final String? imageUrl;
   final String? ownerId;
+  final double averageRating;
+  final int reviewCount;
+  final DateTime? proSince;
 
   LatLng get position => LatLng(latitude, longitude);
 
@@ -50,7 +72,15 @@ class FoodTruck {
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String?,
+      bio: json['bio'] as String?,
       cuisineType: json['cuisine_type'] as String?,
+      phone: json['phone'] as String?,
+      serviceType: json['service_type'] as String?,
+      socialInstagram: json['social_instagram'] as String?,
+      socialFacebook: json['social_facebook'] as String?,
+      socialTiktok: json['social_tiktok'] as String?,
+      socialX: json['social_x'] as String?,
+      socialWebsite: json['social_website'] as String?,
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       isOpen: json['is_open'] as bool? ?? true,
@@ -58,6 +88,11 @@ class FoodTruck {
       openingHours: hoursMap.isNotEmpty ? hoursMap : null,
       imageUrl: json['image_url'] as String?,
       ownerId: json['owner_id'] as String?,
+      averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0,
+      reviewCount: json['review_count'] as int? ?? 0,
+      proSince: json['pro_since'] != null
+          ? DateTime.tryParse(json['pro_since'] as String)
+          : null,
     );
   }
 
@@ -66,7 +101,15 @@ class FoodTruck {
       'id': id,
       'name': name,
       'description': description,
+      'bio': bio,
       'cuisine_type': cuisineType,
+      'phone': phone,
+      'service_type': serviceType,
+      'social_instagram': socialInstagram,
+      'social_facebook': socialFacebook,
+      'social_tiktok': socialTiktok,
+      'social_x': socialX,
+      'social_website': socialWebsite,
       'latitude': latitude,
       'longitude': longitude,
       'is_open': isOpen,
@@ -76,7 +119,58 @@ class FoodTruck {
       ),
       'image_url': imageUrl,
       'owner_id': ownerId,
+      'average_rating': averageRating,
+      'review_count': reviewCount,
+      'pro_since': proSince?.toIso8601String(),
     };
+  }
+
+  /// Returns a copy of this foodtruck with the given fields replaced.
+  FoodTruck copyWith({
+    String? name,
+    String? description,
+    String? bio,
+    String? cuisineType,
+    String? phone,
+    String? serviceType,
+    String? socialInstagram,
+    String? socialFacebook,
+    String? socialTiktok,
+    String? socialX,
+    String? socialWebsite,
+    double? latitude,
+    double? longitude,
+    bool? isOpen,
+    String? status,
+    Map<String, DayHours>? openingHours,
+    String? imageUrl,
+    double? averageRating,
+    int? reviewCount,
+  }) {
+    return FoodTruck(
+      id: id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      bio: bio ?? this.bio,
+      cuisineType: cuisineType ?? this.cuisineType,
+      phone: phone ?? this.phone,
+      serviceType: serviceType ?? this.serviceType,
+      socialInstagram: socialInstagram ?? this.socialInstagram,
+      socialFacebook: socialFacebook ?? this.socialFacebook,
+      socialTiktok: socialTiktok ?? this.socialTiktok,
+      socialX: socialX ?? this.socialX,
+      socialWebsite: socialWebsite ?? this.socialWebsite,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isOpen: isOpen ?? this.isOpen,
+      status: status ?? this.status,
+      openingHours: openingHours ?? this.openingHours,
+      imageUrl: imageUrl ?? this.imageUrl,
+      ownerId: ownerId,
+      averageRating: averageRating ?? this.averageRating,
+      reviewCount: reviewCount ?? this.reviewCount,
+      proSince: proSince,
+    );
   }
 
   String? getTodayHours() {

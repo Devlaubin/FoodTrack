@@ -93,7 +93,15 @@ class ProService extends ChangeNotifier {
   Future<bool> updateInfo({
     String? name,
     String? description,
+    String? bio,
     String? cuisineType,
+    String? phone,
+    String? serviceType,
+    String? socialInstagram,
+    String? socialFacebook,
+    String? socialTiktok,
+    String? socialX,
+    String? socialWebsite,
     String? imageUrl,
     bool? isOpen,
     String? status,
@@ -103,7 +111,17 @@ class ProService extends ChangeNotifier {
     final updates = <String, dynamic>{};
     if (name != null) updates['name'] = name;
     if (description != null) updates['description'] = description;
+    if (bio != null) updates['bio'] = bio;
     if (cuisineType != null) updates['cuisine_type'] = cuisineType;
+    if (phone != null) updates['phone'] = phone;
+    if (serviceType != null) updates['service_type'] = serviceType;
+    if (socialInstagram != null) {
+      updates['social_instagram'] = socialInstagram;
+    }
+    if (socialFacebook != null) updates['social_facebook'] = socialFacebook;
+    if (socialTiktok != null) updates['social_tiktok'] = socialTiktok;
+    if (socialX != null) updates['social_x'] = socialX;
+    if (socialWebsite != null) updates['social_website'] = socialWebsite;
     if (imageUrl != null) updates['image_url'] = imageUrl;
     if (isOpen != null) updates['is_open'] = isOpen;
     if (status != null) updates['status'] = status;

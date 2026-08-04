@@ -4,6 +4,8 @@ import 'package:foodtruck_app/config/supabase_config.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/services/foodtruck_service.dart';
 import 'package:foodtruck_app/services/pro_service.dart';
+import 'package:foodtruck_app/services/report_service.dart';
+import 'package:foodtruck_app/services/review_service.dart';
 import 'package:foodtruck_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -27,6 +29,12 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => ProService(Supabase.instance.client),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReportService(Supabase.instance.client),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReviewService(Supabase.instance.client),
         ),
       ],
       child: const MyApp(),

@@ -60,3 +60,52 @@ IconData resolveIcon(String? iconId) {
   final match = foodtruckIcons.where((f) => f.id == iconId);
   return match.isNotEmpty ? match.first.icon : Icons.fastfood;
 }
+
+/// Curated list of cuisine types that a foodtruck owner can select from when
+/// creating their foodtruck. Multiple types can be selected.
+const List<String> cuisineTypes = [
+  'Burger',
+  'Tacos',
+  'Pizza',
+  'Kebab',
+  'Asiatique',
+  'Sushi',
+  'Ramen',
+  'Indien',
+  'Mexicain',
+  'Italien',
+  'Libanais',
+  'Crépes',
+  'Gauffres',
+  'Bagel',
+  'Sandwich',
+  'Frites',
+  'Salade',
+  'Barbecue',
+  'Poisson',
+  'Végétarien',
+  'Vegan',
+  'Dessert',
+  'Glace',
+  'Boulangerie',
+  'Café',
+  'Brunch',
+  'Jus / Smoothies',
+  'Autre',
+];
+
+/// Splits a stored CSV `cuisine_type` string into a list of trimmed types.
+/// Returns an empty list if input is null/empty.
+List<String> parseCuisineTypes(String? cuisineType) {
+  if (cuisineType == null || cuisineType.trim().isEmpty) return const [];
+  return cuisineType
+      .split(',')
+      .map((t) => t.trim())
+      .where((t) => t.isNotEmpty)
+      .toList();
+}
+
+/// Joins a list of cuisine types into a CSV string for storage.
+String joinCuisineTypes(Iterable<String> types) {
+  return types.map((t) => t.trim()).where((t) => t.isNotEmpty).join(', ');
+}

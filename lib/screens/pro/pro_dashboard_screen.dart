@@ -5,6 +5,7 @@ import 'package:foodtruck_app/domain/menu_item.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/services/pro_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
+import 'package:foodtruck_app/utils/formatters.dart';
 import 'package:provider/provider.dart';
 
 class ProDashboardScreen extends StatefulWidget {
@@ -21,7 +22,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ownerId = context.read<AuthService>().user?.id;
       if (ownerId != null) {
@@ -78,6 +79,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen>
                     Tab(text: 'INFOS & GPS'),
                     Tab(text: 'MENU'),
                     Tab(text: 'HORAIRES'),
+                    Tab(text: 'PROFIL'),
                   ],
                 ),
               ),
@@ -97,7 +99,12 @@ class _ProDashboardScreenState extends State<ProDashboardScreen>
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: const [_InfoAndGpsTab(), _MenuTab(), _HoursTab()],
+                  children: const [
+                    _InfoAndGpsTab(),
+                    _MenuTab(),
+                    _HoursTab(),
+                    _ProfileTab(),
+                  ],
                 ),
               ),
             ],
@@ -202,7 +209,7 @@ class _CreateFoodtruckForm extends StatefulWidget {
 class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
   int _currentStep = 0;
   final _nameController = TextEditingController();
-  final _cuisineController = TextEditingController();
+  final Set<String> _selectedCuisineTypes = {};
   String? _selectedIconId;
   bool _isSubmitting = false;
 
@@ -211,7 +218,6 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
   @override
   void dispose() {
     _nameController.dispose();
-    _cuisineController.dispose();
     super.dispose();
   }
 
@@ -240,7 +246,7 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
     }
   }
 
-  Future<void> _submit() async {
+Future<void> _submit() async {
     if (_nameController.text.trim().isEmpty) return;
 
     setState(() => _isSubmitting = true);
@@ -250,9 +256,9 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
       await context.read<ProService>().createMyFoodtruck(
         ownerId: ownerId,
         name: _nameController.text.trim(),
-        cuisineType: _cuisineController.text.trim().isEmpty
+        cuisineType: _selectedCuisineTypes.isEmpty
             ? null
-            : _cuisineController.text.trim(),
+            : joinCuisineTypes(_selectedCuisineTypes),
       );
 
       // If an icon was selected, update it after creation
@@ -500,25 +506,16 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _cuisineController,
-                    decoration: InputDecoration(
-                      labelText: 'Type de cuisine (ex: burger, tacos...)',
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: FoodtrackColors.rougeKetchup,
-                          width: 2,
-                        ),
-                      ),
-                    ),
+const SizedBox(height: 12),
+                  _CuisineTypeDropdown(
+                    selectedTypes: _selectedCuisineTypes,
+                    onChanged: (types) {
+                      setState(() {
+                        _selectedCuisineTypes
+                          ..clear()
+                          ..addAll(types);
+                      });
+                    },
                   ),
                 ],
               ),
@@ -575,11 +572,11 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
               const SizedBox(height: 16),
               _resumeRow('Nom', _nameController.text.trim()),
               const Divider(height: 20),
-              _resumeRow(
+_resumeRow(
                 'Type de cuisine',
-                _cuisineController.text.trim().isEmpty
+                _selectedCuisineTypes.isEmpty
                     ? 'Non specifie'
-                    : _cuisineController.text.trim(),
+                    : joinCuisineTypes(_selectedCuisineTypes),
               ),
               const Divider(height: 20),
               _resumeRow(
@@ -631,6 +628,265 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// A neo-brutalist multi-select dropdown for choosing cuisine types.
+class _CuisineTypeDropdown extends StatelessWidget {
+  const _CuisineTypeDropdown({
+    required this.selectedTypes,
+    required this.onChanged,
+  });
+
+  final Set<String> selectedTypes;
+  final ValueChanged<Set<String>> onChanged;
+
+  void _toggleType(String type) {
+    final updated = Set<String>.from(selectedTypes);
+    if (!updated.remove(type)) {
+      updated.add(type);
+    }
+    onChanged(updated);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final displayText = selectedTypes.isEmpty
+        ? 'Choisis tes types de cuisine (plusieurs possibles)'
+        : joinCuisineTypes(selectedTypes);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () {
+            showModalBottomSheet<void>(
+              context: context,
+              backgroundColor: FoodtrackColors.cremeVintage,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              builder: (sheetContext) {
+                return StatefulBuilder(
+                  builder: (sheetContext, setSheetState) {
+                    return DraggableScrollableSheet(
+                      expand: false,
+                      initialChildSize: 0.6,
+                      minChildSize: 0.4,
+                      maxChildSize: 0.9,
+                      builder: (context, scrollController) {
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    'Type de cuisine',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: FoodtrackColors.noirBrule,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  TextButton(
+                                    onPressed: () {
+                                      onChanged(const {});
+                                    },
+                                    child: const Text(
+                                      'Tout effacer',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: FoodtrackColors.rougeKetchup,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Divider(height: 1, color: FoodtrackColors.noirBrule),
+                            Expanded(
+                              child: ListView(
+                                controller: scrollController,
+                                padding: const EdgeInsets.all(16),
+                                children: [
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: cuisineTypes.map((type) {
+                                      final isSelected = selectedTypes.contains(type);
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setSheetState(() {
+                                            _toggleType(type);
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? FoodtrackColors.vertPickle
+                                                : Colors.white,
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: FoodtrackColors.noirBrule,
+                                              width: isSelected ? 3 : 2,
+                                            ),
+                                            boxShadow: isSelected
+                                                ? const [
+                                                    BoxShadow(
+                                                      color: FoodtrackColors.noirBrule,
+                                                      offset: Offset(2, 2),
+                                                      blurRadius: 0,
+                                                    ),
+                                                  ]
+                                                : null,
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (isSelected) ...[
+                                                const Icon(
+                                                  Icons.check,
+                                                  size: 16,
+                                                  color: FoodtrackColors.noirBrule,
+                                                ),
+                                                const SizedBox(width: 6),
+                                              ],
+                                              Text(
+                                                type,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: isSelected
+                                                      ? FoodtrackColors.noirBrule
+                                                      : FoodtrackColors.noirBrule
+                                                          .withOpacity(0.7),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(sheetContext);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: FoodtrackColors.rougeKetchup,
+                                    foregroundColor: FoodtrackColors.cremeVintage,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Valider',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    displayText,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: selectedTypes.isEmpty
+                          ? FoodtrackColors.noirBrule.withOpacity(0.5)
+                          : FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.arrow_drop_down,
+                  color: FoodtrackColors.rougeKetchup,
+                  size: 28,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (selectedTypes.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: selectedTypes.map((type) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: FoodtrackColors.jauneMoutarde,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      type,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: FoodtrackColors.noirBrule,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () => _toggleType(type),
+                      child: const Icon(
+                        Icons.close,
+                        size: 14,
+                        color: FoodtrackColors.noirBrule,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ],
     );
   }
@@ -790,6 +1046,364 @@ class _InfoAndGpsTabState extends State<_InfoAndGpsTab> {
           ],
         );
       },
+    );
+  }
+}
+
+class _ProfileTab extends StatefulWidget {
+  const _ProfileTab();
+
+  @override
+  State<_ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<_ProfileTab> {
+  late TextEditingController _bioController;
+  late TextEditingController _phoneController;
+  late TextEditingController _serviceTypeController;
+  late TextEditingController _instagramController;
+  late TextEditingController _facebookController;
+  late TextEditingController _tiktokController;
+  late TextEditingController _xController;
+  late TextEditingController _websiteController;
+  bool _initialized = false;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _bioController.dispose();
+    _phoneController.dispose();
+    _serviceTypeController.dispose();
+    _instagramController.dispose();
+    _facebookController.dispose();
+    _tiktokController.dispose();
+    _xController.dispose();
+    _websiteController.dispose();
+    super.dispose();
+  }
+
+  void _initControllers(FoodTruck ft) {
+    if (_initialized) return;
+    _bioController = TextEditingController(text: ft.bio ?? '');
+    _phoneController = TextEditingController(text: ft.phone ?? '');
+    _serviceTypeController = TextEditingController(
+      text: ft.serviceType ?? '',
+    );
+    _instagramController = TextEditingController(
+      text: ft.socialInstagram ?? '',
+    );
+    _facebookController = TextEditingController(text: ft.socialFacebook ?? '');
+    _tiktokController = TextEditingController(text: ft.socialTiktok ?? '');
+    _xController = TextEditingController(text: ft.socialX ?? '');
+    _websiteController = TextEditingController(text: ft.socialWebsite ?? '');
+    _initialized = true;
+  }
+
+  Future<void> _save(ProService pro) async {
+    setState(() => _saving = true);
+    final ok = await pro.updateInfo(
+      bio: _bioController.text.trim(),
+      phone: _phoneController.text.trim(),
+      serviceType: _serviceTypeController.text.trim(),
+      socialInstagram: _instagramController.text.trim(),
+      socialFacebook: _facebookController.text.trim(),
+      socialTiktok: _tiktokController.text.trim(),
+      socialX: _xController.text.trim(),
+      socialWebsite: _websiteController.text.trim(),
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ok
+                ? 'Profil mis a jour !'
+                : 'Erreur lors de l\'enregistrement du profil',
+          ),
+          backgroundColor: ok
+              ? FoodtrackColors.vertPickle
+              : FoodtrackColors.rougeKetchup,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ProService>(
+      builder: (context, pro, child) {
+        final ft = pro.myFoodtruck!;
+        _initControllers(ft);
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+          children: [
+            // Seniority card
+            if (ft.proSince != null) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: FoodtrackColors.jauneMoutarde,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: FoodtrackColors.noirBrule,
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.verified_outlined,
+                      color: FoodtrackColors.noirBrule,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Membre FoodTrack depuis '
+                        '${Formatters.monthYear(ft.proSince!)}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: FoodtrackColors.noirBrule,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Bio / Description
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Description complete',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _bioController,
+                    maxLines: 5,
+                    maxLength: 600,
+                    decoration: InputDecoration(
+                      labelText: 'Parle de ton foodtruck, ton histoire...',
+                      alignLabelWithHint: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: FoodtrackColors.rougeKetchup,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Ce texte sera affiche sur ta fiche publique.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Contact & services
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Contact & services',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'Telephone (optionnel)',
+                      prefixIcon: const Icon(Icons.phone_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _serviceTypeController,
+                    decoration: InputDecoration(
+                      labelText: 'Type de service (sur place, a emporter...)',
+                      prefixIcon: const Icon(Icons.storefront_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Social networks
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.alternate_email,
+                        size: 20,
+                        color: FoodtrackColors.rougeKetchup,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Reseaux sociaux',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: FoodtrackColors.noirBrule,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Tes liens seront affiches sur ta fiche publique.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _socialField(
+                    controller: _instagramController,
+                    label: 'Instagram',
+                    hint: '@mon_foodtruck',
+                    icon: Icons.photo_camera_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                  _socialField(
+                    controller: _facebookController,
+                    label: 'Facebook',
+                    hint: 'pseudo ou page',
+                    icon: Icons.facebook_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                  _socialField(
+                    controller: _tiktokController,
+                    label: 'TikTok',
+                    hint: '@mon_foodtruck',
+                    icon: Icons.music_note_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                  _socialField(
+                    controller: _xController,
+                    label: 'X (Twitter)',
+                    hint: '@mon_foodtruck',
+                    icon: Icons.alternate_email,
+                  ),
+                  const SizedBox(height: 12),
+                  _socialField(
+                    controller: _websiteController,
+                    label: 'Site web',
+                    hint: 'https://monfoodtruck.fr',
+                    icon: Icons.public,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            ElevatedButton.icon(
+              onPressed: _saving ? null : () => _save(pro),
+              icon: _saving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: FoodtrackColors.cremeVintage,
+                      ),
+                    )
+                  : const Icon(Icons.save_outlined),
+              label: const Text(
+                'Enregistrer le profil',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: FoodtrackColors.rougeKetchup,
+                foregroundColor: FoodtrackColors.cremeVintage,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _socialField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, size: 20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: FoodtrackColors.rougeKetchup,
+            width: 2,
+          ),
+        ),
+      ),
     );
   }
 }

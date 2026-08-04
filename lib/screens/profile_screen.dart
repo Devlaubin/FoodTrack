@@ -3,6 +3,8 @@ import 'package:foodtruck_app/app/app_router.dart';
 import 'package:foodtruck_app/domain/user_profile.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/services/pro_service.dart';
+import 'package:foodtruck_app/services/report_service.dart';
+import 'package:foodtruck_app/services/review_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:provider/provider.dart';
 
@@ -49,6 +51,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 8),
                   _buildSettingsPanel(),
                 ],
+                const SizedBox(height: 16),
+
+                // Support / Reports section
+                _buildSupportSection(),
                 const SizedBox(height: 16),
 
                 // Credits & Licenses section
@@ -275,6 +281,134 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _showComingSoon(context, 'Mode sombre');
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSupportSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: FoodtrackColors.noirBrule,
+            offset: Offset(3, 3),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.support_agent,
+                color: FoodtrackColors.rougeKetchup,
+                size: 22,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Aide & Signalements',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: FoodtrackColors.noirBrule,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _supportTile(
+            icon: Icons.bug_report_outlined,
+            title: 'Signaler un bug ou une amelioration',
+            subtitle: 'Partage un probleme ou une idee',
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRouter.feedback);
+            },
+          ),
+          const Divider(height: 24),
+          _supportTile(
+            icon: Icons.report_gmailerrorred,
+            title: 'Signaler un utilisateur',
+            subtitle: 'Harcelement, spam, contenu inapproprie...',
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRouter.reportUser);
+            },
+          ),
+          const Divider(height: 24),
+          _supportTile(
+            icon: Icons.history,
+            title: 'Mes signalements & retours',
+            subtitle: 'Suis le statut de tes envois',
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRouter.myReports);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _supportTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: FoodtrackColors.cremeVintage,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: FoodtrackColors.noirBrule.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: FoodtrackColors.rougeKetchup,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: FoodtrackColors.noirBrule,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: FoodtrackColors.noirBrule.withOpacity(0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: FoodtrackColors.noirBrule,
           ),
         ],
       ),
@@ -557,6 +691,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           await auth.signOut();
           if (context.mounted) {
             context.read<ProService>().clear();
+            context.read<ReportService>().clear();
+            context.read<ReviewService>().clear();
             Navigator.of(context).pushNamedAndRemoveUntil(
               AppRouter.splash,
               (_) => false,

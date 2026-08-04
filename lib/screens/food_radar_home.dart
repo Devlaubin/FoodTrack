@@ -18,6 +18,7 @@ class FoodRadarHome extends StatefulWidget {
 
 class _FoodRadarHomeState extends State<FoodRadarHome> {
   bool _showFilters = false;
+  bool _hasCenteredOnUser = false;
   final MapController _mapController = MapController();
   late final TextEditingController _searchController;
 
@@ -25,6 +26,14 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    // Auto-locate the user on launch so the map is centered on them
+    // with their direction (arrow) shown.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final service = context.read<FoodtruckService>();
+      if (!service.hasUserLocation) {
+        service.requestLocation();
+      }
+    });
   }
 
   @override
@@ -69,16 +78,6 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                       bottom: false,
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(8, 4, 12, 8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              FoodtrackColors.cremeVintage.withOpacity(0.95),
-                              FoodtrackColors.cremeVintage.withOpacity(0.0),
-                            ],
-                          ),
-                        ),
                         child: Row(
                           children: [
                             // Logo top-left
@@ -207,15 +206,13 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                                             : FoodtrackColors.noirBrule,
                                       ),
                                     ),
-                                    if (foodtruckService.cuisineTypeFilter !=
-                                            null ||
-                                        foodtruckService.openNowFilter)
+                                    if (foodtruckService.hasActiveFilters)
                                       Positioned(
                                         top: -2,
                                         right: -2,
                                         child: Container(
-                                          width: 10,
-                                          height: 10,
+                                          width: 16,
+                                          height: 16,
                                           decoration: BoxDecoration(
                                             color: FoodtrackColors.vertPickle,
                                             shape: BoxShape.circle,
@@ -223,6 +220,17 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                                               color:
                                                   FoodtrackColors.cremeVintage,
                                               width: 2,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              '${foodtruckService.activeFilterCount}',
+                                              style: const TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w800,
+                                                color: FoodtrackColors
+                                                    .cremeVintage,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -303,6 +311,48 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+
+              // Recenter button (bottom-right)
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () async {
+                    final service = foodtruckService;
+                    if (!service.hasUserLocation) {
+                      await service.requestLocation();
+                    }
+                    if (service.hasUserLocation) {
+                      _mapController.move(service.userPosition!, 15.0);
+                    }
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: FoodtrackColors.noirBrule,
+                        width: 2,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: FoodtrackColors.noirBrule,
+                          offset: Offset(3, 3),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.my_location,
+                      color: foodtruckService.hasUserLocation
+                          ? FoodtrackColors.rougeKetchup
+                          : FoodtrackColors.noirBrule.withOpacity(0.5),
+                    ),
                   ),
                 ),
               ),
@@ -394,6 +444,47 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
       );
     }
 
+    // Build markers list: foodtruck markers + user location marker
+    final List<Marker> markers = [];
+
+    // Add foodtruck markers
+    markers.addAll(
+      foodtruckService.foodtrucks.map(
+        (foodtruck) => Marker(
+          point: foodtruck.position,
+          width: 72,
+          height: 72,
+          child: FoodtruckMapMarker(
+            foodtruck: foodtruck,
+            onTap: () {
+              showFoodtruckBottomSheet(context, foodtruck);
+            },
+          ),
+        ),
+      ),
+    );
+
+    // Add user arrow marker if location is active
+    if (foodtruckService.hasUserLocation) {
+      markers.add(
+        Marker(
+          point: foodtruckService.userPosition!,
+          width: 56,
+          height: 56,
+          child: UserLocationMarker(heading: foodtruckService.userHeading),
+        ),
+      );
+
+      // Recenter map on user if this is the first time.
+      // Use a flag so we only center once on initial load.
+      if (!_hasCenteredOnUser) {
+        _hasCenteredOnUser = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _mapController.move(foodtruckService.userPosition!, 15.0);
+        });
+      }
+    }
+
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
@@ -409,23 +500,7 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
           maxZoom: 19,
           errorTileCallback: (tile, error, stackTrace) {},
         ),
-        MarkerLayer(
-          markers: foodtruckService.foodtrucks
-              .map(
-                (foodtruck) => Marker(
-                  point: foodtruck.position,
-                  width: 72,
-                  height: 72,
-                  child: FoodtruckMapMarker(
-                    foodtruck: foodtruck,
-                    onTap: () {
-                      showFoodtruckBottomSheet(context, foodtruck);
-                    },
-                  ),
-                ),
-              )
-              .toList(),
-        ),
+        MarkerLayer(markers: markers),
       ],
     );
   }
@@ -480,6 +555,47 @@ class FoodtruckMapMarker extends StatelessWidget {
           foodtruck.logoIcon,
           size: 26,
           color: FoodtrackColors.cremeVintage,
+        ),
+      ),
+    );
+  }
+}
+
+/// A map marker showing the user's current position as a directional arrow.
+/// The arrow rotates to match the device's heading (direction of travel).
+class UserLocationMarker extends StatelessWidget {
+  const UserLocationMarker({super.key, this.heading});
+
+  final double? heading;
+
+  @override
+  Widget build(BuildContext context) {
+    // Default heading: point north (0) if not available.
+    final angle = heading != null ? heading! : 0.0;
+
+    return Center(
+      child: Transform.rotate(
+        angle: angle * 3.141592653589793 / 180,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: FoodtrackColors.rougeKetchup,
+            shape: BoxShape.circle,
+            border: Border.all(color: FoodtrackColors.noirBrule, width: 3),
+            boxShadow: const [
+              BoxShadow(
+                color: FoodtrackColors.noirBrule,
+                offset: Offset(3, 3),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.navigation,
+            size: 26,
+            color: FoodtrackColors.cremeVintage,
+          ),
         ),
       ),
     );

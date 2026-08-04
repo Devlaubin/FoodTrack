@@ -1,4 +1,4 @@
-package com.example.foodtruck_app
+package com.foodtrack.app
 
 import io.flutter.embedding.android.FlutterActivity
 

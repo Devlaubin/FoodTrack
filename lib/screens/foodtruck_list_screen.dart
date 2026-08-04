@@ -28,8 +28,10 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: FoodtrackColors.jauneMoutarde,
                     borderRadius: BorderRadius.circular(12),
@@ -104,8 +106,7 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
                                 : FoodtrackColors.noirBrule,
                           ),
                         ),
-                        if (service.cuisineTypeFilter != null ||
-                            service.openNowFilter) ...[
+                        if (service.hasActiveFilters) ...[
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -116,9 +117,11 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
                               color: FoodtrackColors.vertPickle,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
-                              'Actif',
-                              style: TextStyle(
+                            child: Text(
+                              service.activeFilterCount > 1
+                                  ? '${service.activeFilterCount} actifs'
+                                  : 'Actif',
+                              style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                                 color: FoodtrackColors.cremeVintage,
@@ -151,86 +154,83 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
                         ),
                       )
                     : service.error != null
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  size: 48,
-                                  color: FoodtrackColors.rougeKetchup,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  service.error!,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: FoodtrackColors.noirBrule,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: service.loadFoodtrucks,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        FoodtrackColors.rougeKetchup,
-                                    foregroundColor:
-                                        FoodtrackColors.cremeVintage,
-                                  ),
-                                  child: const Text('Reessayer'),
-                                ),
-                              ],
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: FoodtrackColors.rougeKetchup,
                             ),
-                          )
-                        : service.foodtrucks.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.fastfood_outlined,
-                                      size: 64,
-                                      color: FoodtrackColors.noirBrule
-                                          .withOpacity(0.3),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Aucun foodtruck trouve',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: FoodtrackColors.noirBrule,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Essaie d\'elargir tes filtres',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color: FoodtrackColors.noirBrule,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : ListView.builder(
-                                padding: const EdgeInsets.only(bottom: 100),
-                                itemCount: service.foodtrucks.length,
-                                itemBuilder: (context, index) {
-                                  final foodtruck = service.foodtrucks[index];
-                                  return FoodtruckCard(
-                                    foodtruck: foodtruck,
-                                    onTap: () {
-                                      Navigator.of(context).pushNamed(
-                                        AppRouter.foodtruckDetail,
-                                        arguments: foodtruck,
-                                      );
-                                    },
-                                  );
-                                },
+                            const SizedBox(height: 16),
+                            Text(
+                              service.error!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: FoodtrackColors.noirBrule,
                               ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: service.loadFoodtrucks,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: FoodtrackColors.rougeKetchup,
+                                foregroundColor: FoodtrackColors.cremeVintage,
+                              ),
+                              child: const Text('Reessayer'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : service.foodtrucks.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.fastfood_outlined,
+                              size: 64,
+                              color: FoodtrackColors.noirBrule.withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Aucun foodtruck trouve',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: FoodtrackColors.noirBrule,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Essaie d\'elargir tes filtres',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: FoodtrackColors.noirBrule,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 100),
+                        itemCount: service.foodtrucks.length,
+                        itemBuilder: (context, index) {
+                          final foodtruck = service.foodtrucks[index];
+                          return FoodtruckCard(
+                            foodtruck: foodtruck,
+                            onTap: () {
+                              Navigator.of(context).pushNamed(
+                                AppRouter.foodtruckDetail,
+                                arguments: foodtruck,
+                              );
+                            },
+                          );
+                        },
+                      ),
               ),
             ],
           ),

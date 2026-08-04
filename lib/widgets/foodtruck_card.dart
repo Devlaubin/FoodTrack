@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
 import 'package:foodtruck_app/theme/colors.dart';
+import 'package:foodtruck_app/utils/formatters.dart';
 
 class FoodtruckCard extends StatelessWidget {
   const FoodtruckCard({
@@ -86,13 +87,46 @@ class FoodtruckCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      foodtruck.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: FoodtrackColors.noirBrule,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            foodtruck.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: FoodtrackColors.noirBrule,
+                            ),
+                          ),
+                        ),
+                        if (foodtruck.reviewCount > 0) ...[
+                          Icon(
+                            Icons.star_rounded,
+                            size: 16,
+                            color: FoodtrackColors.jauneMoutarde,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            Formatters.rating(foodtruck.averageRating),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: FoodtrackColors.noirBrule,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '(${foodtruck.reviewCount})',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: FoodtrackColors.noirBrule.withOpacity(
+                                0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Row(
