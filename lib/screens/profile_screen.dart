@@ -18,6 +18,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _showLicenses = false;
   bool _showSettings = false;
+  bool _showSupport = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         return Scaffold(
           backgroundColor: FoodtrackColors.cremeVintage,
-          appBar: AppBar(
-            title: const Text('Mon profil'),
-            centerTitle: true,
-          ),
+          appBar: AppBar(title: const Text('Mon profil'), centerTitle: true),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -54,7 +52,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 16),
 
                 // Support / Reports section
-                _buildSupportSection(),
+                _buildSectionHeader(
+                  icon: Icons.support_agent,
+                  title: 'Aide & Signalements',
+                  isExpanded: _showSupport,
+                  onTap: () => setState(() => _showSupport = !_showSupport),
+                ),
+                if (_showSupport) ...[
+                  const SizedBox(height: 8),
+                  _buildSupportPanel(),
+                ],
                 const SizedBox(height: 16),
 
                 // Credits & Licenses section
@@ -78,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Version info
                 Center(
                   child: Text(
-                    'FoodTrack BETA v1.1.0',
+                    'FoodTrack BETA v1.2.5',
                     style: TextStyle(
                       fontSize: 12,
                       color: FoodtrackColors.noirBrule.withOpacity(0.4),
@@ -287,43 +294,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSupportSection() {
+  Widget _buildSupportPanel() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
-        boxShadow: const [
-          BoxShadow(
-            color: FoodtrackColors.noirBrule,
-            offset: Offset(3, 3),
-            blurRadius: 0,
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.support_agent,
-                color: FoodtrackColors.rougeKetchup,
-                size: 22,
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Aide & Signalements',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: FoodtrackColors.noirBrule,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           _supportTile(
             icon: Icons.bug_report_outlined,
             title: 'Signaler un bug ou une amelioration',
@@ -376,11 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 1,
               ),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: FoodtrackColors.rougeKetchup,
-            ),
+            child: Icon(icon, size: 20, color: FoodtrackColors.rougeKetchup),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -528,11 +505,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 1,
               ),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: FoodtrackColors.rougeKetchup,
-            ),
+            child: Icon(icon, size: 20, color: FoodtrackColors.rougeKetchup),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -667,9 +640,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               'Deconnexion',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
-            content: const Text(
-              'Es-tu sur de vouloir te deconnecter ?',
-            ),
+            content: const Text('Es-tu sur de vouloir te deconnecter ?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -693,10 +664,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             context.read<ProService>().clear();
             context.read<ReportService>().clear();
             context.read<ReviewService>().clear();
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRouter.splash,
-              (_) => false,
-            );
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(AppRouter.splash, (_) => false);
           }
         }
       },
@@ -704,9 +674,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: FoodtrackColors.noirBrule,
         foregroundColor: FoodtrackColors.cremeVintage,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       icon: const Icon(Icons.logout),
       label: const Text(
@@ -722,11 +690,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: Text('$feature - bientot disponible !'),
         backgroundColor: FoodtrackColors.rougeKetchup,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 }
-

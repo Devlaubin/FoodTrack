@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:foodtruck_app/app/app_router.dart';
 import 'package:foodtruck_app/domain/user_profile.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
@@ -21,6 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   UserRole _selectedRole = UserRole.client;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -32,32 +34,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSubmitting = true);
     final authService = context.read<AuthService>();
-    final success = await authService.signUp(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-      role: _selectedRole,
-      displayName: _displayNameController.text.trim().isNotEmpty
-          ? _displayNameController.text.trim()
-          : null,
-    );
 
-    if (success && mounted) {
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(AppRouter.home, (route) => false);
-      return;
-    }
-
-    if (!success && mounted && authService.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authService.error!),
-          backgroundColor: FoodtrackColors.rougeKetchup,
-        ),
+    try {
+      final success = await authService.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        role: _selectedRole,
+        displayName: _displayNameController.text.trim().isNotEmpty
+            ? _displayNameController.text.trim()
+            : null,
       );
+
+      if (!mounted) return;
+
+      // Email confirmation required -> redirect to verification screen
+      if (authService.needsEmailVerification) {
+        Navigator.of(context).pushReplacementNamed(
+          AppRouter.emailVerification,
+          arguments: _emailController.text.trim(),
+        );
+        return;
+      }
+
+      if (success) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRouter.home, (route) => false);
+        return;
+      }
+
+      if (authService.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authService.error!),
+            backgroundColor: FoodtrackColors.rougeKetchup,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
   }
 
@@ -68,283 +91,299 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Container(
-              padding: const EdgeInsets.all(28),
-              decoration: BoxDecoration(
-                color: FoodtrackColors.cremeVintage,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: FoodtrackColors.noirBrule, width: 3),
-                boxShadow: const [
-                  BoxShadow(
-                    color: FoodtrackColors.noirBrule,
-                    offset: Offset(6, 6),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.lunch_dining,
-                      size: 56,
-                      color: FoodtrackColors.rougeKetchup,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Inscription',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Rejoins la famille !',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: FoodtrackColors.noirBrule,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-
-                    // Display name field (optional)
-                    _NeoTextField(
-                      controller: _displayNameController,
-                      label: 'Pseudo (optionnel)',
-                      prefixIcon: Icons.person_outline,
-                      validator: null,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Email field
-                    _NeoTextField(
-                      controller: _emailController,
-                      label: 'Email',
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: Icons.email_outlined,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Entre ton email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Email invalide';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Password field
-                    _NeoTextField(
-                      controller: _passwordController,
-                      label: 'Mot de passe',
-                      obscureText: _obscurePassword,
-                      prefixIcon: Icons.lock_outline,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
                           color: FoodtrackColors.noirBrule,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Entre un mot de passe';
-                        }
-                        if (value.length < 6) {
-                          return 'Min. 6 caracteres';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Confirm password field
-                    _NeoTextField(
-                      controller: _confirmPasswordController,
-                      label: 'Confirmer le mot de passe',
-                      obscureText: _obscureConfirmPassword,
-                      prefixIcon: Icons.lock_outline,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: FoodtrackColors.noirBrule,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
-                        },
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Confirme ton mot de passe';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'Les mots de passe ne correspondent pas';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Role selection
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: FoodtrackColors.noirBrule,
-                          width: 2,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: FoodtrackColors.noirBrule,
-                            offset: Offset(3, 3),
-                            blurRadius: 0,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Tu es...',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: FoodtrackColors.noirBrule,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _RoleCard(
-                                  icon: Icons.restaurant,
-                                  label: 'Gourmand',
-                                  description: 'Je cherche des foodtrucks',
-                                  isSelected: _selectedRole == UserRole.client,
-                                  color: FoodtrackColors.jauneMoutarde,
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedRole = UserRole.client;
-                                    });
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _RoleCard(
-                                  icon: Icons.local_shipping,
-                                  label: 'Pro',
-                                  description: 'Je gere un foodtruck',
-                                  isSelected: _selectedRole == UserRole.pro,
-                                  color: FoodtrackColors.vertPickle,
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedRole = UserRole.pro;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    Consumer<AuthService>(
-                      builder: (context, auth, child) {
-                        if (auth.isLoading) {
-                          return const SizedBox(
-                            height: 48,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: FoodtrackColors.rougeKetchup,
-                              ),
-                            ),
-                          );
-                        }
-
-                        return SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _handleRegister,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: FoodtrackColors.vertPickle,
-                              foregroundColor: FoodtrackColors.cremeVintage,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 16,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                side: const BorderSide(
-                                  color: FoodtrackColors.noirBrule,
-                                  width: 2,
-                                ),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Creer mon compte',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Deja un compte ?',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: FoodtrackColors.noirBrule,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(
-                              context,
-                            ).pushReplacementNamed('/login');
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: FoodtrackColors.rougeKetchup,
-                          ),
-                          child: const Text(
-                            'Se connecter',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
+                          blurRadius: 0,
+                          offset: Offset(0, 6),
                         ),
                       ],
                     ),
-                  ],
-                ),
+                    child: const Icon(
+                      Icons.lunch_dining,
+                      size: 52,
+                      color: FoodtrackColors.vertPickle,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Inscription',
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Rejoins la communauté des foodtrucks !',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: FoodtrackColors.noirBrule,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: FoodtrackColors.noirBrule,
+                        width: 2,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: FoodtrackColors.noirBrule,
+                          offset: Offset(6, 6),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _ModernTextField(
+                            controller: _displayNameController,
+                            label: 'Pseudo (optionnel)',
+                            hint: 'Ton petit nom',
+                            textInputAction: TextInputAction.next,
+                            prefixIcon: Icons.person_outline_rounded,
+                          ),
+                          const SizedBox(height: 16),
+                          _ModernTextField(
+                            controller: _emailController,
+                            label: 'Adresse email',
+                            hint: 'exemple@email.com',
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            prefixIcon: Icons.alternate_email_rounded,
+                            validator: (value) {
+                              final email = value?.trim() ?? '';
+                              if (email.isEmpty) {
+                                return 'Entre ton adresse email';
+                              }
+                              if (!_isValidEmail(email)) {
+                                return 'Adresse email invalide';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _ModernTextField(
+                            controller: _passwordController,
+                            label: 'Mot de passe',
+                            hint: 'Min. 6 caractères',
+                            obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.next,
+                            prefixIcon: Icons.lock_outline_rounded,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: FoodtrackColors.noirBrule,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Entre un mot de passe';
+                              }
+                              if (value.length < 6) {
+                                return 'Min. 6 caractères';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _ModernTextField(
+                            controller: _confirmPasswordController,
+                            label: 'Confirmer le mot de passe',
+                            hint: 'Répète ton mot de passe',
+                            obscureText: _obscureConfirmPassword,
+                            textInputAction: TextInputAction.done,
+                            prefixIcon: Icons.lock_outline_rounded,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: FoodtrackColors.noirBrule,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscureConfirmPassword =
+                                      !_obscureConfirmPassword;
+                                });
+                              },
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Confirme ton mot de passe';
+                              }
+                              if (value != _passwordController.text) {
+                                return 'Les mots de passe ne correspondent pas';
+                              }
+                              return null;
+                            },
+                            onFieldSubmitted: (_) => _handleRegister(),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Role selection
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: FoodtrackColors.cremeVintage,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: FoodtrackColors.noirBrule,
+                                width: 2,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                const Text(
+                                  'Tu es...',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: FoodtrackColors.noirBrule,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _RoleCard(
+                                        icon: Icons.restaurant_rounded,
+                                        label: 'Gourmand',
+                                        description:
+                                            'Je cherche\n des foodtrucks',
+                                        isSelected:
+                                            _selectedRole == UserRole.client,
+                                        color: FoodtrackColors.jauneMoutarde,
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedRole = UserRole.client;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _RoleCard(
+                                        icon: Icons.local_shipping_rounded,
+                                        label: 'Pro',
+                                        description: 'Je gère\n un foodtruck',
+                                        isSelected:
+                                            _selectedRole == UserRole.pro,
+                                        color: FoodtrackColors.vertPickle,
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedRole = UserRole.pro;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          if (_isSubmitting)
+                            const SizedBox(
+                              height: 52,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: FoodtrackColors.vertPickle,
+                                ),
+                              ),
+                            )
+                          else
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton(
+                                onPressed: _handleRegister,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      FoodtrackColors.vertPickle,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: const BorderSide(
+                                      color: FoodtrackColors.noirBrule,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Créer mon compte',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Déjà un compte ?',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: FoodtrackColors.noirBrule,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(
+                            context,
+                          ).pushReplacementNamed(AppRouter.login);
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: FoodtrackColors.rougeKetchup,
+                        ),
+                        child: const Text(
+                          'Se connecter',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -352,68 +391,105 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
+
+  bool _isValidEmail(String email) {
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(email);
+  }
 }
 
-class _NeoTextField extends StatelessWidget {
-  const _NeoTextField({
+class _ModernTextField extends StatelessWidget {
+  const _ModernTextField({
     required this.controller,
     required this.label,
+    this.hint,
     this.keyboardType,
+    this.textInputAction,
     this.obscureText = false,
     this.prefixIcon,
     this.suffixIcon,
     this.validator,
+    this.onFieldSubmitted,
   });
 
   final TextEditingController controller;
   final String label;
+  final String? hint;
   final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
   final bool obscureText;
   final IconData? prefixIcon;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final ValueChanged<String>? onFieldSubmitted;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
-        boxShadow: const [
-          BoxShadow(
-            color: FoodtrackColors.noirBrule,
-            offset: Offset(3, 3),
-            blurRadius: 0,
-          ),
-        ],
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      obscureText: obscureText,
+      validator: validator,
+      onFieldSubmitted: onFieldSubmitted,
+      style: const TextStyle(
+        fontSize: 16,
+        color: FoodtrackColors.noirBrule,
+        fontWeight: FontWeight.w500,
       ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-        validator: validator,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: const TextStyle(
+          color: FoodtrackColors.noirBrule,
+          fontWeight: FontWeight.w600,
+        ),
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: FoodtrackColors.noirBrule)
+            : null,
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: FoodtrackColors.cremeVintage,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 18,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
             color: FoodtrackColors.noirBrule,
-            fontWeight: FontWeight.w600,
-          ),
-          prefixIcon: prefixIcon != null
-              ? Icon(prefixIcon, color: FoodtrackColors.noirBrule)
-              : null,
-          suffixIcon: suffixIcon,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          errorStyle: const TextStyle(
-            color: FoodtrackColors.rougeKetchup,
-            fontWeight: FontWeight.w600,
+            width: 2,
           ),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: FoodtrackColors.vertPickle,
+            width: 2.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: FoodtrackColors.rougeKetchup,
+            width: 2,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: FoodtrackColors.rougeKetchup,
+            width: 2.5,
+          ),
+        ),
+        errorStyle: const TextStyle(
+          color: FoodtrackColors.rougeKetchup,
+          fontWeight: FontWeight.w600,
+        ),
       ),
+      inputFormatters: keyboardType == TextInputType.emailAddress
+          ? [FilteringTextInputFormatter.deny(RegExp(r'\s'))]
+          : null,
     );
   }
 }
@@ -439,11 +515,13 @@ class _RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: FoodtrackColors.noirBrule,
             width: isSelected ? 3 : 2,
@@ -452,7 +530,7 @@ class _RoleCard extends StatelessWidget {
               ? const [
                   BoxShadow(
                     color: FoodtrackColors.noirBrule,
-                    offset: Offset(2, 2),
+                    offset: Offset(3, 3),
                     blurRadius: 0,
                   ),
                 ]
@@ -462,27 +540,28 @@ class _RoleCard extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 28,
+              size: 30,
               color: isSelected ? FoodtrackColors.noirBrule : Colors.grey,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
                 color: isSelected
                     ? FoodtrackColors.noirBrule
                     : FoodtrackColors.noirBrule.withValues(alpha: 0.5),
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               description,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
+                height: 1.2,
                 color: isSelected
                     ? FoodtrackColors.noirBrule
                     : FoodtrackColors.noirBrule.withValues(alpha: 0.5),

@@ -121,7 +121,7 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                                     color: FoodtrackColors.noirBrule,
                                   ),
                                   decoration: InputDecoration(
-                                    hintText: 'Rechercher un foodtruck...',
+                                    hintText: 'Rechercher...',
                                     hintStyle: TextStyle(
                                       color: FoodtrackColors.noirBrule
                                           .withOpacity(0.4),
@@ -487,11 +487,12 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
 
     return FlutterMap(
       mapController: _mapController,
-      options: MapOptions(
+options: MapOptions(
         initialCenter: foodtruckService.foodtrucks.isNotEmpty
             ? foodtruckService.foodtrucks.first.position
             : const LatLng(48.8566, 2.3522),
         initialZoom: 13.0,
+        maxZoom: 18.0,
       ),
       children: [
         TileLayer(

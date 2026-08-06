@@ -98,19 +98,14 @@ rajoter carte ficelité, que si les pro veulent
 integration stocakge ph"oto avec compression des image calité ou faire en sorte qye ca prenne bcp moins de place.
 verification email code 5chiffe A2F
 chque semine actualisation des pri localisation ddeclaré ou il va cahque semaine et localisation par default 
-mettre oivert et ferme en temps reel 
-meilleur gestion du compte pro
-nouevel page dans pro gestion des ocalisation par dedfault
-geolocaliser l'utiliasteur 
-anlever le fli blanc en haut de la carte
 mettre photo de profil utilisateur 
 mettre ephoto banniere pour les pro avec un carousel d'image de eu foodtruck
 verifier adresse mail
-bloquer le zoom avant si il a attein un zoom trop precis
-afficher profil public date d'inscription
 ajouter des j'aime visbile publiquemnt et des enregistrement privee
 ajouter une nouelle page avec les favorie les commentaire et enregistrer
 aide et signalement  devloppable et refermable comme les parametre
-btn recentrer sur l'utlisateur en bas a droite
 zoom moyen sur l'utilisateur par default au lancement de la carte
-les detail ne s'affcihe pas sur le prfil publique du foodtruck genre descrtption
+pub goolge
+page evenement
+chatgot discution : https://chatgpt.com/share/6a7329fc-e830-83eb-a294-d19a2ef734e5
+modernise la page de connection et la page d'insrcion puis verifie l'dress mail a l'inscription

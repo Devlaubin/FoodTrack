@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
+import 'package:foodtruck_app/screens/auth/email_verification_screen.dart';
 import 'package:foodtruck_app/screens/auth/login_screen.dart';
 import 'package:foodtruck_app/screens/auth/register_screen.dart';
 import 'package:foodtruck_app/screens/foodtruck_detail_screen.dart';
@@ -16,6 +17,7 @@ class AppRouter {
   static const String home = '/home';
   static const String login = '/login';
   static const String register = '/register';
+  static const String emailVerification = '/email-verification';
   static const String foodtruckDetail = '/foodtruck';
   static const String foodtruckList = '/list';
   static const String feedback = '/feedback';
@@ -32,6 +34,11 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case register:
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
+      case emailVerification:
+        final email = settings.arguments as String? ?? '';
+        return MaterialPageRoute(
+          builder: (_) => EmailVerificationScreen(email: email),
+        );
       case foodtruckList:
         return MaterialPageRoute(builder: (_) => const FoodtruckListScreen());
       case foodtruckDetail:

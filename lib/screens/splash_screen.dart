@@ -12,6 +12,17 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  AuthService? _authService;
+  bool _navigated = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cache the reference once, so we never look it up from a deactivated
+    // context (e.g. during dispose).
+    _authService ??= context.read<AuthService>();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -22,7 +33,8 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
 
-    final authService = context.read<AuthService>();
+    final authService = _authService;
+    if (authService == null) return;
 
     // Listen to auth state changes to react to sign-out while on splash
     authService.addListener(_onAuthChanged);
@@ -30,7 +42,15 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
 
-    if (authService.isAuthenticated) {
+    _goToInitialRoute(authService.isAuthenticated);
+  }
+
+  void _goToInitialRoute(bool isAuthenticated) {
+    if (!mounted) return;
+    if (_navigated) return;
+    _navigated = true;
+
+    if (isAuthenticated) {
       Navigator.of(context).pushReplacementNamed(AppRouter.home);
     } else {
       Navigator.of(context).pushReplacementNamed(AppRouter.login);
@@ -39,18 +59,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _onAuthChanged() {
     if (!mounted) return;
-    final authService = context.read<AuthService>();
-    if (authService.isAuthenticated) {
-      Navigator.of(context).pushReplacementNamed(AppRouter.home);
-    } else {
-      Navigator.of(context).pushReplacementNamed(AppRouter.login);
-    }
+    final authService = _authService;
+    if (authService == null) return;
+    _goToInitialRoute(authService.isAuthenticated);
   }
 
   @override
   void dispose() {
-    // Remove listener to avoid calling setState after dispose
-    context.read<AuthService>().removeListener(_onAuthChanged);
+    // Use the cached reference, never context.read() during dispose.
+    final authService = _authService;
+    if (authService != null) {
+      authService.removeListener(_onAuthChanged);
+    }
     super.dispose();
   }
 
