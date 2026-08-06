@@ -4,7 +4,7 @@
 
 **Localise les food trucks autour de toi, découvre leurs menus et suis leur activité en temps réel.**
 
-![version](https://img.shields.io/badge/version-1.2.0-333333?style=flat-square)
+![version](https://img.shields.io/badge/version-1.2.75-333333?style=flat-square)
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.8-0175C2?style=flat-square&logo=dart&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=flat-square&logo=supabase&logoColor=white)

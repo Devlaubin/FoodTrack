@@ -1,46 +1,571 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+<!doctype html>
+<html lang="fr">
+  <head>
+    <base href="$FLUTTER_BASE_HREF" />
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="FoodTrack — Localise les food trucks autour de toi, découvre leurs menus et suis leur activité en temps réel."
+    />
+    <meta name="theme-color" content="#FDF6EC" />
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+    <!-- iOS meta tags & icons -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="FoodTrack" />
+    <link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png" />
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+    <title>FoodTrack</title>
+    <link rel="manifest" href="manifest.json" />
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="foodtruck_app">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <!-- Polices (Poppins, alignées avec l'app) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+    <style>
+      :root {
+        --creme: #fdf6ec;
+        --noir: #2b2b2b;
+        --ketchup: #e63946;
+        --pickle: #6a994e;
+        --moutarde: #f4bf4f;
+        --blanc: #ffffff;
+      }
 
-  <title>foodtruck_app</title>
-  <link rel="manifest" href="manifest.json">
-</head>
-<body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
-</body>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--creme);
+        color: var(--noir);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* ---------- Utils ---------- */
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        padding: 16px 28px;
+        border-radius: 16px;
+        border: 3px solid var(--noir);
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          transform 0.1s ease,
+          box-shadow 0.1s ease;
+        color: var(--noir);
+        background: none;
+      }
+      .btn:active {
+        transform: translate(3px, 3px);
+        box-shadow: none !important;
+      }
+      .btn-primary {
+        background: var(--ketchup);
+        color: var(--creme);
+        box-shadow: 5px 5px 0 var(--noir);
+      }
+      .btn-secondary {
+        background: var(--blanc);
+        box-shadow: 5px 5px 0 var(--noir);
+      }
+      .btn-green {
+        background: var(--pickle);
+        color: var(--creme);
+        box-shadow: 5px 5px 0 var(--noir);
+      }
+
+      /* ---------- Navbar ---------- */
+      .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--creme);
+        border-bottom: 3px solid var(--noir);
+      }
+      .navbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 22px;
+      }
+      .logo img {
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+      }
+      .nav-links {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+      }
+      .nav-links a {
+        text-decoration: none;
+        color: var(--noir);
+        font-weight: 600;
+        font-size: 15px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 2px solid transparent;
+      }
+      .nav-links a:hover {
+        border-color: var(--noir);
+        background: var(--blanc);
+      }
+      .nav-links .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+      @media (max-width: 760px) {
+        .nav-links a {
+          display: none;
+        }
+      }
+
+      /* ---------- Hero ---------- */
+      .hero {
+        padding: 80px 0 60px;
+        text-align: center;
+        position: relative;
+      }
+      .hero h1 {
+        font-size: clamp(40px, 7vw, 72px);
+        font-weight: 900;
+        line-height: 1.1;
+        letter-spacing: -1px;
+      }
+      .hero h1 .sticker {
+        display: inline-block;
+        background: var(--moutarde);
+        padding: 4px 18px;
+        border-radius: 14px;
+        border: 3px solid var(--noir);
+        box-shadow: 5px 5px 0 var(--noir);
+        transform: rotate(-2deg);
+      }
+      .hero p.tagline {
+        font-size: clamp(18px, 2.5vw, 24px);
+        font-weight: 600;
+        max-width: 640px;
+        margin: 28px auto;
+        color: #555;
+      }
+      .hero-cta {
+        display: flex;
+        gap: 18px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .hero-preview {
+        margin-top: 60px;
+        position: relative;
+        display: inline-block;
+      }
+      .hero-preview img {
+        max-width: 100%;
+        border-radius: 24px;
+        border: 4px solid var(--noir);
+        box-shadow: 10px 10px 0 var(--noir);
+      }
+      .float-badge {
+        position: absolute;
+        background: var(--blanc);
+        border: 3px solid var(--noir);
+        border-radius: 14px;
+        padding: 10px 16px;
+        font-weight: 700;
+        font-size: 14px;
+        box-shadow: 4px 4px 0 var(--noir);
+      }
+      .badge-1 {
+        top: -18px;
+        left: -20px;
+        transform: rotate(-4deg);
+      }
+      .badge-2 {
+        bottom: -18px;
+        right: -20px;
+        transform: rotate(3deg);
+        background: var(--pickle);
+        color: var(--creme);
+      }
+
+      /* ---------- Sections ---------- */
+      section {
+        padding: 70px 0;
+      }
+      .section-title {
+        text-align: center;
+        font-size: clamp(28px, 4vw, 42px);
+        font-weight: 900;
+        margin-bottom: 16px;
+      }
+      .section-sub {
+        text-align: center;
+        max-width: 620px;
+        margin: 0 auto 48px;
+        color: #555;
+        font-weight: 500;
+        font-size: 17px;
+      }
+
+      /* Features */
+      .grid {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+      .card {
+        background: var(--blanc);
+        border: 3px solid var(--noir);
+        border-radius: 20px;
+        padding: 26px;
+        box-shadow: 6px 6px 0 var(--noir);
+        transition: transform 0.15s ease;
+      }
+      .card:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 9px 9px 0 var(--noir);
+      }
+      .card .icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        border: 3px solid var(--noir);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 16px;
+        box-shadow: 3px 3px 0 var(--noir);
+      }
+      .card h3 {
+        font-size: 19px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .card p {
+        color: #555;
+        font-size: 14.5px;
+      }
+
+      .icon-red {
+        background: var(--ketchup);
+      }
+      .icon-green {
+        background: var(--pickle);
+      }
+      .icon-yellow {
+        background: var(--moutarde);
+      }
+      .icon-white {
+        background: var(--blanc);
+      }
+
+      /* Pro strip */
+      .pro-strip {
+        background: var(--noir);
+        color: var(--creme);
+        border-radius: 24px;
+        padding: 50px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: center;
+        box-shadow: 8px 8px 0 var(--ketchup);
+      }
+      .pro-strip h2 {
+        font-size: 32px;
+        font-weight: 900;
+        margin-bottom: 14px;
+      }
+      .pro-strip p {
+        color: #ddd;
+        margin-bottom: 20px;
+      }
+      .pro-strip ul {
+        list-style: none;
+      }
+      .pro-strip li {
+        margin-bottom: 12px;
+        font-weight: 600;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      @media (max-width: 800px) {
+        .pro-strip {
+          grid-template-columns: 1fr;
+          padding: 34px;
+        }
+      }
+
+      /* CTA band */
+      .cta {
+        text-align: center;
+        background: var(--moutarde);
+        border: 4px solid var(--noir);
+        border-radius: 24px;
+        padding: 50px;
+        box-shadow: 8px 8px 0 var(--noir);
+      }
+      .cta h2 {
+        font-size: clamp(26px, 4vw, 40px);
+        font-weight: 900;
+        margin-bottom: 12px;
+      }
+      .cta p {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 26px;
+      }
+
+      /* Footer */
+      footer {
+        border-top: 3px solid var(--noir);
+        background: var(--blanc);
+        padding: 30px 24px;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+      }
+      footer .foot-links {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      footer a {
+        color: var(--noir);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* ---------- Overlay vitrine plein écran ---------- */
+      #landing {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: var(--creme);
+        overflow-y: auto;
+      }
+      #landing.hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ==================== SITE VITRINE (overlay) ==================== -->
+    <div id="landing">
+      <!-- Navbar -->
+      <nav class="navbar">
+        <div class="navbar-inner container">
+          <div class="logo">
+            <img src="assets/Logo.png" alt="FoodTrack logo" />
+            <span>FoodTrack</span>
+          </div>
+          <div class="nav-links">
+            <a href="#fonctionnalites">Fonctionnalités</a>
+            <a href="#pro">Espace Pro</a>
+            <a href="#apropos">À propos</a>
+            <button class="btn btn-primary" onclick="launchApp()">
+              Lancer l'app
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Hero -->
+      <header class="hero container">
+        <h1>
+          La street food<br />
+          <span class="sticker">près de chez toi</span>
+        </h1>
+        <p class="tagline">
+          Localise les food trucks autour de toi, découvre leurs menus et suis
+          leur activité en temps réel. Bon appétit !
+        </p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" onclick="launchApp()">
+            Lancer l'application
+          </button>
+          <a class="btn btn-secondary" href="#fonctionnalites">Découvrir</a>
+        </div>
+
+        <div class="hero-preview">
+          <img src="img/image.png" alt="Aperçu de l'application FoodTrack" />
+          <div class="float-badge badge-1">📍 Géolocalisation live</div>
+          <div class="float-badge badge-2">⭐ Avis & notes</div>
+        </div>
+      </header>
+
+      <!-- Fonctionnalités -->
+      <section id="fonctionnalites">
+        <div class="container">
+          <h2 class="section-title">Tout pour chiner de bons food trucks</h2>
+          <p class="section-sub">
+            Une carte interactive, des filtres malins et des fiches complètes
+            pour ne plus jamais rater le bon plan.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <div class="icon icon-red">🗺️</div>
+              <h3>Carte interactive</h3>
+              <p>
+                Visualise les food trucks sur une carte OpenStreetMap, avec des
+                marqueurs colorés par type de cuisine.
+              </p>
+            </div>
+            <div class="card">
+              <div class="icon icon-green">🎯</div>
+              <h3>Géolocalisation temps réel</h3>
+              <p>
+                Centrage automatique sur ta position et flèche indiquant ta
+                direction en direct.
+              </p>
+            </div>
+            <div class="card">
+              <div class="icon icon-yellow">🔍</div>
+              <h3>Recherche & filtres</h3>
+              <p>
+                Par nom, type de cuisine, « ouverts maintenant » ou « près de
+                moi ». Trie comme tu veux !
+              </p>
+            </div>
+            <div class="card">
+              <div class="icon icon-white">🍽️</div>
+              <h3>Fiches détaillées</h3>
+              <p>
+                Menu par catégories, horaires hebdomadaires, services et liens
+                vers les réseaux sociaux.
+              </p>
+            </div>
+            <div class="card">
+              <div class="icon icon-red">⭐</div>
+              <h3>Avis & notes</h3>
+              <p>
+                Note les food trucks, partage ton expérience et aide la
+                communauté à choisir.
+              </p>
+            </div>
+            <div class="card">
+              <div class="icon icon-green">🆘</div>
+              <h3>Support intégré</h3>
+              <p>
+                Signale un bug, propose une amélioration ou signale un
+                utilisateur directement depuis l'app.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Espace Pro -->
+      <section id="pro">
+        <div class="container">
+          <div class="pro-strip">
+            <div>
+              <h2>Tu es un food truck ?</h2>
+              <p>
+                Rejoins FoodTrack et gagne en visibilité. Montre-toi sur la
+                carte et gère toute ton activité depuis un espace dédié.
+              </p>
+            </div>
+            <ul>
+              <li>Position GPS mise à jour en un clic</li>
+              <li>Gestion du menu & disponibilité des plats</li>
+              <li>Horaires d'ouverture jour par jour</li>
+              <li>Profil complet avec réseaux sociaux</li>
+              <li>Fiche publique auprès de milliers de clients</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section id="apropos">
+        <div class="container">
+          <div class="cta">
+            <h2>Prêt à retrouver ton prochain food truck ?</h2>
+            <p>
+              Lance l'application et découvre tous les food trucks autour de
+              toi.
+            </p>
+            <button class="btn btn-green" onclick="launchApp()">
+              Lancer l'application
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer>
+        <div class="foot-links">
+          <a href="#fonctionnalites">Fonctionnalités</a>
+          <a href="#pro">Espace Pro</a>
+          <a href="#apropos">À propos</a>
+        </div>
+        <p>
+          © <span id="year"></span> FoodTrack - Open source · Fait avec ❤️ et
+          beaucoup de street food.
+        </p>
+      </footer>
+    </div>
+
+    <!-- ==================== APP FLUTTER ==================== -->
+    <!-- flutter_bootstrap.js charge l'app en arrière-plan. Elle est masquée
+       par l'overlay #landing tant que l'utilisateur n'a pas cliqué. -->
+    <script src="flutter_bootstrap.js" async></script>
+
+    <script>
+      // Année dynamique dans le footer
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // Masque l'overlay vitrine pour révéler l'app Flutter
+      function launchApp() {
+        document.getElementById("landing").classList.add("hidden");
+        // Remonte en haut de l'app
+        window.scrollTo(0, 0);
+        // Empêche le scroll de l'overlay de persister
+        document.body.style.overflow = "auto";
+      }
+    </script>
+  </body>
 </html>
