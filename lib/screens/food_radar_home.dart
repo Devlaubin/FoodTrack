@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
 import 'package:foodtruck_app/services/auth_service.dart';
@@ -6,6 +9,7 @@ import 'package:foodtruck_app/services/foodtruck_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:foodtruck_app/widgets/filter_panel.dart';
 import 'package:foodtruck_app/widgets/foodtruck_bottom_sheet.dart';
+import 'package:foodtruck_app/widgets/foodtruck_marker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -47,6 +51,11 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
   Widget build(BuildContext context) {
     return Consumer2<AuthService, FoodtruckService>(
       builder: (context, auth, foodtruckService, child) {
+        final compactLayout = MediaQuery.sizeOf(context).width < 360;
+        final logoSize = compactLayout ? 48.0 : 56.0;
+        final bottomControlsOffset =
+            104.0 + MediaQuery.paddingOf(context).bottom;
+
         // Sync search controller with service
         if (_searchController.text != foodtruckService.searchQuery) {
           _searchController.value = _searchController.value.copyWith(
@@ -84,10 +93,11 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                             Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Image.asset(
-                                'assets/Logo.png',
-                                width: 64,
-                                height: 64,
+                                'Markdown/ImgLogo/vrai logog/iubvizihvz87687.png',
+                                width: logoSize,
+                                height: logoSize,
                                 fit: BoxFit.contain,
+                                semanticLabel: 'FoodTrack',
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -95,7 +105,7 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                             // Search bar (expanded)
                             Expanded(
                               child: Container(
-                                height: 44,
+                                height: 48,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(22),
@@ -114,6 +124,7 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                                 child: TextField(
                                   onChanged: foodtruckService.setSearchQuery,
                                   controller: _searchController,
+                                  textAlign: TextAlign.center,
                                   textAlignVertical: TextAlignVertical.center,
                                   style: const TextStyle(
                                     fontSize: 14,
@@ -128,16 +139,17 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                                       fontWeight: FontWeight.w500,
                                       fontSize: 13,
                                     ),
-                                    prefixIcon: const Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 12,
-                                        right: 8,
-                                      ),
+                                    prefixIcon: const SizedBox(
+                                      width: 48,
                                       child: Icon(
                                         Icons.search,
                                         color: FoodtrackColors.rougeKetchup,
                                         size: 20,
                                       ),
+                                    ),
+                                    prefixIconConstraints: const BoxConstraints(
+                                      minWidth: 48,
+                                      minHeight: 48,
                                     ),
                                     suffixIcon:
                                         foodtruckService.searchQuery.isNotEmpty
@@ -156,7 +168,11 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                                                   .setSearchQuery(''),
                                             ),
                                           )
-                                        : null,
+                                        : const SizedBox(width: 48),
+                                    suffixIconConstraints: const BoxConstraints(
+                                      minWidth: 48,
+                                      minHeight: 48,
+                                    ),
                                     border: InputBorder.none,
                                     contentPadding: const EdgeInsets.symmetric(
                                       vertical: 10,
@@ -169,73 +185,84 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
                             const SizedBox(width: 8),
 
                             // Filter toggle button
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _showFilters = !_showFilters;
-                                });
-                              },
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: _showFilters
-                                      ? FoodtrackColors.rougeKetchup
-                                      : Colors.white,
+                            Semantics(
+                              button: true,
+                              label: _showFilters
+                                  ? 'Masquer les filtres'
+                                  : 'Afficher les filtres',
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
                                   borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: FoodtrackColors.noirBrule,
-                                    width: 2,
-                                  ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: FoodtrackColors.noirBrule,
-                                      offset: Offset(3, 3),
-                                      blurRadius: 0,
-                                    ),
-                                  ],
-                                ),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Center(
-                                      child: Icon(
-                                        Icons.filter_list,
-                                        color: _showFilters
-                                            ? FoodtrackColors.cremeVintage
-                                            : FoodtrackColors.noirBrule,
+                                  onTap: () {
+                                    setState(() {
+                                      _showFilters = !_showFilters;
+                                    });
+                                  },
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: _showFilters
+                                          ? FoodtrackColors.rougeKetchup
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: FoodtrackColors.noirBrule,
+                                        width: 2,
                                       ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: FoodtrackColors.noirBrule,
+                                          offset: Offset(3, 3),
+                                          blurRadius: 0,
+                                        ),
+                                      ],
                                     ),
-                                    if (foodtruckService.hasActiveFilters)
-                                      Positioned(
-                                        top: -2,
-                                        right: -2,
-                                        child: Container(
-                                          width: 16,
-                                          height: 16,
-                                          decoration: BoxDecoration(
-                                            color: FoodtrackColors.vertPickle,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color:
-                                                  FoodtrackColors.cremeVintage,
-                                              width: 2,
-                                            ),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Center(
+                                          child: Icon(
+                                            Icons.filter_list,
+                                            color: _showFilters
+                                                ? FoodtrackColors.cremeVintage
+                                                : FoodtrackColors.noirBrule,
                                           ),
-                                          child: Center(
-                                            child: Text(
-                                              '${foodtruckService.activeFilterCount}',
-                                              style: const TextStyle(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w800,
-                                                color: FoodtrackColors
-                                                    .cremeVintage,
+                                        ),
+                                        if (foodtruckService.hasActiveFilters)
+                                          Positioned(
+                                            top: -2,
+                                            right: -2,
+                                            child: Container(
+                                              width: 16,
+                                              height: 16,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    FoodtrackColors.vertPickle,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: FoodtrackColors
+                                                      .cremeVintage,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  '${foodtruckService.activeFilterCount}',
+                                                  style: const TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: FoodtrackColors
+                                                        .cremeVintage,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                  ],
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -271,7 +298,7 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
 
               // Truck count badge (bottom-left)
               Positioned(
-                bottom: 16,
+                bottom: bottomControlsOffset,
                 left: 16,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -317,41 +344,45 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
 
               // Recenter button (bottom-right)
               Positioned(
-                bottom: 16,
+                bottom: bottomControlsOffset,
                 right: 16,
-                child: GestureDetector(
-                  onTap: () async {
-                    final service = foodtruckService;
-                    if (!service.hasUserLocation) {
-                      await service.requestLocation();
-                    }
-                    if (service.hasUserLocation) {
-                      _mapController.move(service.userPosition!, 15.0);
-                    }
-                  },
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: FoodtrackColors.noirBrule,
-                        width: 2,
-                      ),
-                      boxShadow: const [
-                        BoxShadow(
+                child: Semantics(
+                  button: true,
+                  label: 'Recentrer la carte sur ma position',
+                  child: GestureDetector(
+                    onTap: () async {
+                      final service = foodtruckService;
+                      if (!service.hasUserLocation) {
+                        await service.requestLocation();
+                      }
+                      if (service.hasUserLocation) {
+                        _mapController.move(service.userPosition!, 15.0);
+                      }
+                    },
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
                           color: FoodtrackColors.noirBrule,
-                          offset: Offset(3, 3),
-                          blurRadius: 0,
+                          width: 2,
                         ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.my_location,
-                      color: foodtruckService.hasUserLocation
-                          ? FoodtrackColors.rougeKetchup
-                          : FoodtrackColors.noirBrule.withOpacity(0.5),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: FoodtrackColors.noirBrule,
+                            offset: Offset(3, 3),
+                            blurRadius: 0,
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.my_location,
+                        color: foodtruckService.hasUserLocation
+                            ? FoodtrackColors.rougeKetchup
+                            : FoodtrackColors.noirBrule.withOpacity(0.5),
+                      ),
                     ),
                   ),
                 ),
@@ -452,8 +483,9 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
       foodtruckService.foodtrucks.map(
         (foodtruck) => Marker(
           point: foodtruck.position,
-          width: 72,
-          height: 72,
+          width: 54,
+          height: 61,
+          alignment: Alignment.bottomCenter,
           child: FoodtruckMapMarker(
             foodtruck: foodtruck,
             onTap: () {
@@ -487,7 +519,7 @@ class _FoodRadarHomeState extends State<FoodRadarHome> {
 
     return FlutterMap(
       mapController: _mapController,
-options: MapOptions(
+      options: MapOptions(
         initialCenter: foodtruckService.foodtrucks.isNotEmpty
             ? foodtruckService.foodtrucks.first.position
             : const LatLng(48.8566, 2.3522),
@@ -517,46 +549,14 @@ class FoodtruckMapMarker extends StatelessWidget {
   final FoodTruck foodtruck;
   final VoidCallback onTap;
 
-  Color get _markerColor {
-    if (!foodtruck.isCurrentlyOpen) {
-      return FoodtrackColors.noirBrule.withOpacity(0.6);
-    }
-    switch (foodtruck.cuisineType?.toLowerCase()) {
-      case 'burger':
-        return FoodtrackColors.rougeKetchup;
-      case 'tacos':
-        return FoodtrackColors.vertPickle;
-      case 'pizza':
-        return FoodtrackColors.jauneMoutarde;
-      default:
-        return FoodtrackColors.rougeKetchup;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: _markerColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: FoodtrackColors.noirBrule, width: 2.5),
-          boxShadow: const [
-            BoxShadow(
-              color: FoodtrackColors.noirBrule,
-              offset: Offset(3, 3),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Icon(
-          foodtruck.logoIcon,
-          size: 26,
-          color: FoodtrackColors.cremeVintage,
-        ),
+    return Semantics(
+      button: true,
+      label: 'Voir ${foodtruck.name}',
+      child: GestureDetector(
+        onTap: onTap,
+        child: FoodtruckMapPin(foodtruck: foodtruck),
       ),
     );
   }
@@ -564,15 +564,42 @@ class FoodtruckMapMarker extends StatelessWidget {
 
 /// A map marker showing the user's current position as a directional arrow.
 /// The arrow rotates to match the device's heading (direction of travel).
-class UserLocationMarker extends StatelessWidget {
+class UserLocationMarker extends StatefulWidget {
   const UserLocationMarker({super.key, this.heading});
 
   final double? heading;
 
   @override
+  State<UserLocationMarker> createState() => _UserLocationMarkerState();
+}
+
+class _UserLocationMarkerState extends State<UserLocationMarker> {
+  StreamSubscription<CompassEvent>? _compassSubscription;
+  double? _compassHeading;
+
+  @override
+  void initState() {
+    super.initState();
+    _compassSubscription = FlutterCompass.events?.listen(
+      (event) {
+        if (event.heading == null || !mounted) return;
+        setState(() => _compassHeading = event.heading);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        debugPrint('Compass heading unavailable: $error');
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _compassSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Default heading: point north (0) if not available.
-    final angle = heading != null ? heading! : 0.0;
+    final angle = _compassHeading ?? widget.heading ?? 0.0;
 
     return Center(
       child: Transform.rotate(

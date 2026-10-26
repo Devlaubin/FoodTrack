@@ -14,7 +14,41 @@ class FoodtruckListScreen extends StatefulWidget {
 }
 
 class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
-  bool _showFilters = false;
+  Future<void> _showFilterSheet() {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.45,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: FoodtrackColors.cremeVintage,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(
+              top: BorderSide(color: FoodtrackColors.noirBrule, width: 2),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              controller: scrollController,
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
+              ),
+              child: const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: FilterPanel(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,20 +92,15 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showFilters = !_showFilters;
-                    });
-                  },
+                  onTap: _showFilterSheet,
                   child: Container(
+                    constraints: const BoxConstraints(minHeight: 48),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 10,
+                      vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: _showFilters
-                          ? FoodtrackColors.rougeKetchup
-                          : Colors.white,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: FoodtrackColors.noirBrule,
@@ -91,9 +120,7 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
                         Icon(
                           Icons.filter_list,
                           size: 20,
-                          color: _showFilters
-                              ? FoodtrackColors.cremeVintage
-                              : FoodtrackColors.noirBrule,
+                          color: FoodtrackColors.noirBrule,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -101,9 +128,7 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: _showFilters
-                                ? FoodtrackColors.cremeVintage
-                                : FoodtrackColors.noirBrule,
+                            color: FoodtrackColors.noirBrule,
                           ),
                         ),
                         if (service.hasActiveFilters) ...[
@@ -134,14 +159,6 @@ class _FoodtruckListScreenState extends State<FoodtruckListScreen> {
                   ),
                 ),
               ),
-
-              if (_showFilters) ...[
-                const SizedBox(height: 12),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: FilterPanel(),
-                ),
-              ],
 
               const SizedBox(height: 12),
 

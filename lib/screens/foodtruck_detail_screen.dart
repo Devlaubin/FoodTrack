@@ -8,6 +8,7 @@ import 'package:foodtruck_app/services/review_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:foodtruck_app/utils/formatters.dart';
 import 'package:foodtruck_app/widgets/social_links.dart';
+import 'package:foodtruck_app/widgets/foodtruck_marker.dart';
 import 'package:foodtruck_app/widgets/star_rating.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -145,29 +146,9 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                     ),
                     // Main icon
                     Center(
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: FoodtrackColors.cremeVintage,
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                            color: FoodtrackColors.noirBrule,
-                            width: 3,
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: FoodtrackColors.noirBrule,
-                              offset: Offset(4, 4),
-                              blurRadius: 0,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          widget.foodtruck.logoIcon,
-                          size: 44,
-                          color: _accentColor,
-                        ),
+                      child: FoodtruckMarkerIcon(
+                        foodtruck: widget.foodtruck,
+                        size: 80,
                       ),
                     ),
                   ],
@@ -432,7 +413,9 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: FoodtrackColors.vertPickle.withOpacity(0.1),
+                              color: FoodtrackColors.vertPickle.withOpacity(
+                                0.1,
+                              ),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: FoodtrackColors.vertPickle,
@@ -575,7 +558,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorPadding: const EdgeInsets.all(4),
                       labelStyle: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
                       tabs: [
@@ -585,12 +568,12 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                             children: [
                               Icon(
                                 Icons.restaurant_menu,
-                                size: 18,
+                                size: 16,
                                 color: _tabController.index == 0
                                     ? FoodtrackColors.cremeVintage
                                     : FoodtrackColors.noirBrule,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 4),
                               const Text('MENU'),
                             ],
                           ),
@@ -601,12 +584,12 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                             children: [
                               Icon(
                                 Icons.schedule,
-                                size: 18,
+                                size: 16,
                                 color: _tabController.index == 1
                                     ? FoodtrackColors.cremeVintage
                                     : FoodtrackColors.noirBrule,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 4),
                               const Text('HORAIRES'),
                             ],
                           ),
@@ -617,12 +600,12 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                             children: [
                               Icon(
                                 Icons.star_rounded,
-                                size: 18,
+                                size: 16,
                                 color: _tabController.index == 2
                                     ? FoodtrackColors.cremeVintage
                                     : FoodtrackColors.noirBrule,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 4),
                               const Text('AVIS'),
                             ],
                           ),
@@ -1099,9 +1082,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
         }
 
         final reviews = reviewService.reviews;
-        final isLoggedIn = context
-                .read<AuthService>()
-                .profile != null;
+        final isLoggedIn = context.read<AuthService>().profile != null;
 
         return Container(
           padding: const EdgeInsets.all(16),
@@ -1234,15 +1215,18 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                       final review = reviews[index];
                       return _ReviewTile(
                         review: review,
-                        isMine: isLoggedIn &&
+                        isMine:
+                            isLoggedIn &&
                             review.userId ==
                                 context.read<AuthService>().user?.id,
                         accentColor: _accentColor,
-                        onEdit: reviewService.myReview != null &&
+                        onEdit:
+                            reviewService.myReview != null &&
                                 review.id == reviewService.myReview!.id
                             ? () => _showReviewDialog(context, review: review)
                             : null,
-                        onDelete: reviewService.myReview != null &&
+                        onDelete:
+                            reviewService.myReview != null &&
                                 review.id == reviewService.myReview!.id
                             ? () => _deleteReview(reviewService)
                             : null,
@@ -1257,10 +1241,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
     );
   }
 
-  Future<void> _showReviewDialog(
-    BuildContext context, {
-    Review? review,
-  }) async {
+  Future<void> _showReviewDialog(BuildContext context, {Review? review}) async {
     final isEdit = review != null;
     int selectedRating = review?.rating ?? 5;
     final commentController = TextEditingController(
@@ -1337,8 +1318,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      final reviewService =
-                          sheetContext.read<ReviewService>();
+                      final reviewService = sheetContext.read<ReviewService>();
                       final ok = await reviewService.submitReview(
                         foodtruckId: widget.foodtruck.id,
                         rating: selectedRating,
@@ -1346,9 +1326,9 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
                       );
                       if (!ok || !sheetContext.mounted) return;
                       // Refresh the foodtruck rating in the shared cache.
-                      sheetContext
-                          .read<FoodtruckService>()
-                          .refreshFoodtruck(widget.foodtruck.id);
+                      sheetContext.read<FoodtruckService>().refreshFoodtruck(
+                        widget.foodtruck.id,
+                      );
                       Navigator.pop(sheetContext);
                     },
                     style: ElevatedButton.styleFrom(
@@ -1381,10 +1361,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
         backgroundColor: FoodtrackColors.cremeVintage,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(
-            color: FoodtrackColors.noirBrule,
-            width: 2,
-          ),
+          side: const BorderSide(color: FoodtrackColors.noirBrule, width: 2),
         ),
         title: const Text(
           'Supprimer mon avis ?',
@@ -1411,9 +1388,7 @@ class _FoodtruckDetailScreenState extends State<FoodtruckDetailScreen>
     if (confirm == true) {
       final ok = await reviewService.deleteMyReview(widget.foodtruck.id);
       if (ok && mounted) {
-        context
-            .read<FoodtruckService>()
-            .refreshFoodtruck(widget.foodtruck.id);
+        context.read<FoodtruckService>().refreshFoodtruck(widget.foodtruck.id);
       }
     }
   }
@@ -1443,7 +1418,9 @@ class _ReviewTile extends StatelessWidget {
         color: FoodtrackColors.cremeVintage,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isMine ? accentColor : FoodtrackColors.noirBrule.withOpacity(0.3),
+          color: isMine
+              ? accentColor
+              : FoodtrackColors.noirBrule.withOpacity(0.3),
           width: isMine ? 2 : 1.5,
         ),
       ),
@@ -1499,10 +1476,7 @@ class _ReviewTile extends StatelessWidget {
                   ],
                 ),
               ),
-              StarRating(
-                rating: review.rating.toDouble(),
-                size: 15,
-              ),
+              StarRating(rating: review.rating.toDouble(), size: 15),
               if (isMine) ...[
                 const SizedBox(width: 6),
                 IconButton(
@@ -1540,4 +1514,3 @@ class _ReviewTile extends StatelessWidget {
     );
   }
 }
-

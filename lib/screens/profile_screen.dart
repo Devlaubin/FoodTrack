@@ -85,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Version info
                 Center(
                   child: Text(
-                    'FoodTrack BETA v1.2.75',
+                    'FoodTrack BETA v1.3',
                     style: TextStyle(
                       fontSize: 12,
                       color: FoodtrackColors.noirBrule.withOpacity(0.4),

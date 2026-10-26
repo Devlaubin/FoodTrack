@@ -14,6 +14,7 @@ class FilterPanel extends StatefulWidget {
 
 class _FilterPanelState extends State<FilterPanel> {
   late final TextEditingController _searchController;
+  bool _showMore = false;
 
   @override
   void initState() {
@@ -41,6 +42,20 @@ class _FilterPanelState extends State<FilterPanel> {
   Widget build(BuildContext context) {
     return Consumer<FoodtruckService>(
       builder: (context, service, child) {
+        final cuisineTypes = service.availableCuisineTypes;
+        final selectedCuisineTypes = cuisineTypes
+            .where(service.cuisineTypeFilters.contains)
+            .toList();
+        final compactCuisineTypes = [
+          ...selectedCuisineTypes,
+          ...cuisineTypes.where(
+            (type) => !service.cuisineTypeFilters.contains(type),
+          ),
+        ].take(4).toList();
+        final visibleCuisineTypes = _showMore
+            ? cuisineTypes
+            : compactCuisineTypes;
+
         if (_searchController.text != service.searchQuery) {
           _searchController.value = _searchController.value.copyWith(
             text: service.searchQuery,
@@ -54,10 +69,7 @@ class _FilterPanelState extends State<FilterPanel> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: FoodtrackColors.noirBrule,
-              width: 2,
-            ),
+            border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
             boxShadow: const [
               BoxShadow(
                 color: FoodtrackColors.noirBrule,
@@ -202,7 +214,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 ),
               ),
 
-              if (service.availableCuisineTypes.isNotEmpty) ...[
+              if (cuisineTypes.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 const Text(
                   'Type de cuisine',
@@ -216,8 +228,10 @@ class _FilterPanelState extends State<FilterPanel> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: service.availableCuisineTypes.map((type) {
-                    final isSelected = service.cuisineTypeFilters.contains(type);
+                  children: visibleCuisineTypes.map((type) {
+                    final isSelected = service.cuisineTypeFilters.contains(
+                      type,
+                    );
                     return GestureDetector(
                       onTap: () {
                         service.toggleCuisineTypeFilter(type);
@@ -264,7 +278,9 @@ class _FilterPanelState extends State<FilterPanel> {
                                 fontWeight: FontWeight.w700,
                                 color: isSelected
                                     ? FoodtrackColors.noirBrule
-                                    : FoodtrackColors.noirBrule.withOpacity(0.7),
+                                    : FoodtrackColors.noirBrule.withOpacity(
+                                        0.7,
+                                      ),
                               ),
                             ),
                           ],
@@ -275,189 +291,206 @@ class _FilterPanelState extends State<FilterPanel> {
                 ),
               ],
 
-              // Distance filter ("Près de moi")
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.near_me,
-                    color: FoodtrackColors.rougeKetchup,
-                    size: 18,
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () => setState(() => _showMore = !_showMore),
+                  icon: Icon(_showMore ? Icons.expand_less : Icons.expand_more),
+                  label: Text(
+                    _showMore ? 'Voir moins' : 'Voir plus de filtres',
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Près de moi',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: FoodtrackColors.noirBrule,
-                    ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: FoodtrackColors.rougeKetchup,
+                    minimumSize: const Size.fromHeight(44),
                   ),
-                  const Spacer(),
-                  if (service.distanceKm != null)
-                    GestureDetector(
-                      onTap: () => service.clearLocation(),
-                      child: const Icon(
-                        Icons.close,
-                        size: 18,
-                        color: FoodtrackColors.rougeKetchup,
-                      ),
-                    ),
-                ],
+                ),
               ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [1, 5, 10, 25, 50].map((km) {
-                  final isSelected = service.distanceKm == km;
-                  return GestureDetector(
-                    onTap: service.isLocating
-                        ? null
-                        : () => _onDistanceSelected(service, km.toDouble()),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+              if (_showMore) ...[
+                // Distance filter ("Près de moi")
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.near_me,
+                      color: FoodtrackColors.rougeKetchup,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Près de moi',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FoodtrackColors.noirBrule,
                       ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? FoodtrackColors.vertPickle
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: FoodtrackColors.noirBrule,
-                          width: isSelected ? 3 : 2,
+                    ),
+                    const Spacer(),
+                    if (service.distanceKm != null)
+                      GestureDetector(
+                        onTap: () => service.clearLocation(),
+                        child: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: FoodtrackColors.rougeKetchup,
                         ),
-                        boxShadow: isSelected
-                            ? const [
-                                BoxShadow(
-                                  color: FoodtrackColors.noirBrule,
-                                  offset: Offset(2, 2),
-                                  blurRadius: 0,
-                                ),
-                              ]
-                            : null,
                       ),
-                      child: Text(
-                        '$km km',
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [1, 5, 10, 25, 50].map((km) {
+                    final isSelected = service.distanceKm == km;
+                    return GestureDetector(
+                      onTap: service.isLocating
+                          ? null
+                          : () => _onDistanceSelected(service, km.toDouble()),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? FoodtrackColors.vertPickle
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: FoodtrackColors.noirBrule,
+                            width: isSelected ? 3 : 2,
+                          ),
+                          boxShadow: isSelected
+                              ? const [
+                                  BoxShadow(
+                                    color: FoodtrackColors.noirBrule,
+                                    offset: Offset(2, 2),
+                                    blurRadius: 0,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Text(
+                          '$km km',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? FoodtrackColors.cremeVintage
+                                : FoodtrackColors.noirBrule.withOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                if (service.isLocating) ...[
+                  const SizedBox(height: 8),
+                  const Row(
+                    children: [
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: FoodtrackColors.rougeKetchup,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Localisation...',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected
-                              ? FoodtrackColors.cremeVintage
-                              : FoodtrackColors.noirBrule.withOpacity(0.7),
+                          fontStyle: FontStyle.italic,
+                          color: FoodtrackColors.noirBrule,
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              if (service.isLocating) ...[
-                const SizedBox(height: 8),
-                const Row(
-                  children: [
-                    SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
+                    ],
+                  ),
+                ],
+                if (service.locationError != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 14,
                         color: FoodtrackColors.rougeKetchup,
                       ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          service.locationError!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: FoodtrackColors.rougeKetchup,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                // Sort section
+                const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.sort,
+                      color: FoodtrackColors.rougeKetchup,
+                      size: 18,
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Localisation...',
+                      'Trier par',
                       style: TextStyle(
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                         color: FoodtrackColors.noirBrule,
                       ),
                     ),
                   ],
                 ),
-              ],
-              if (service.locationError != null) ...[
                 const SizedBox(height: 8),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 14,
-                      color: FoodtrackColors.rougeKetchup,
+                    _SortChip(
+                      label: 'Pertinence',
+                      icon: Icons.auto_awesome,
+                      isSelected: service.sortOption == FoodtruckSort.relevance,
+                      onTap: () =>
+                          service.setSortOption(FoodtruckSort.relevance),
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        service.locationError!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: FoodtrackColors.rougeKetchup,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                    _SortChip(
+                      label: 'Nom (A-Z)',
+                      icon: Icons.sort_by_alpha,
+                      isSelected: service.sortOption == FoodtruckSort.name,
+                      onTap: () => service.setSortOption(FoodtruckSort.name),
+                    ),
+                    _SortChip(
+                      label: 'Distance',
+                      icon: Icons.near_me,
+                      isSelected: service.sortOption == FoodtruckSort.distance,
+                      onTap: () async {
+                        if (!service.hasUserLocation) {
+                          await service.requestLocation();
+                        }
+                        service.setSortOption(FoodtruckSort.distance);
+                      },
+                    ),
+                    _SortChip(
+                      label: 'Ouverts d\'abord',
+                      icon: Icons.bolt,
+                      isSelected: service.sortOption == FoodtruckSort.openFirst,
+                      onTap: () =>
+                          service.setSortOption(FoodtruckSort.openFirst),
                     ),
                   ],
                 ),
               ],
-
-              // Sort section
-              const SizedBox(height: 16),
-              const Row(
-                children: [
-                  Icon(
-                    Icons.sort,
-                    color: FoodtrackColors.rougeKetchup,
-                    size: 18,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Trier par',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: FoodtrackColors.noirBrule,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _SortChip(
-                    label: 'Pertinence',
-                    icon: Icons.auto_awesome,
-                    isSelected: service.sortOption == FoodtruckSort.relevance,
-                    onTap: () => service.setSortOption(FoodtruckSort.relevance),
-                  ),
-                  _SortChip(
-                    label: 'Nom (A-Z)',
-                    icon: Icons.sort_by_alpha,
-                    isSelected: service.sortOption == FoodtruckSort.name,
-                    onTap: () => service.setSortOption(FoodtruckSort.name),
-                  ),
-                  _SortChip(
-                    label: 'Distance',
-                    icon: Icons.near_me,
-                    isSelected: service.sortOption == FoodtruckSort.distance,
-                    onTap: () async {
-                      if (!service.hasUserLocation) {
-                        await service.requestLocation();
-                      }
-                      service.setSortOption(FoodtruckSort.distance);
-                    },
-                  ),
-                  _SortChip(
-                    label: 'Ouverts d\'abord',
-                    icon: Icons.bolt,
-                    isSelected: service.sortOption == FoodtruckSort.openFirst,
-                    onTap: () =>
-                        service.setSortOption(FoodtruckSort.openFirst),
-                  ),
-                ],
-              ),
             ],
           ),
         );
@@ -486,7 +519,9 @@ class _SortChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? FoodtrackColors.jauneMoutarde : Colors.transparent,
+          color: isSelected
+              ? FoodtrackColors.jauneMoutarde
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: FoodtrackColors.noirBrule,
@@ -529,4 +564,3 @@ class _SortChip extends StatelessWidget {
     );
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:foodtruck_app/domain/foodtruck_icons.dart';
+import 'package:foodtruck_app/theme/colors.dart';
 
 class FoodTruck {
   const FoodTruck({
@@ -56,6 +57,25 @@ class FoodTruck {
   /// Returns the IconData for this foodtruck's chosen logo.
   /// Falls back to [Icons.fastfood] if no icon is selected.
   IconData get logoIcon => resolveIcon(imageUrl);
+
+  /// Stable per-owner marker color, derived from the account ID.
+  Color get markerColor {
+    const palette = [
+      Color(0xFFC84C3A),
+      Color(0xFF287C72),
+      Color(0xFF4F65A8),
+      Color(0xFF8B4E86),
+      Color(0xFFAA6C32),
+      Color(0xFF4E7950),
+      Color(0xFFB14E70),
+      FoodtrackColors.noirBrule,
+    ];
+    var hash = 0x811C9DC5;
+    for (final codeUnit in (ownerId ?? id).codeUnits) {
+      hash = ((hash ^ codeUnit) * 0x01000193) & 0xFFFFFFFF;
+    }
+    return palette[hash % palette.length];
+  }
 
   factory FoodTruck.fromJson(Map<String, dynamic> json) {
     final hoursMap = <String, DayHours>{};
@@ -237,10 +257,7 @@ class FoodTruck {
 }
 
 class DayHours {
-  const DayHours({
-    required this.openTime,
-    required this.closeTime,
-  });
+  const DayHours({required this.openTime, required this.closeTime});
 
   final String openTime;
   final String closeTime;
@@ -253,9 +270,6 @@ class DayHours {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'open': openTime,
-      'close': closeTime,
-    };
+    return {'open': openTime, 'close': closeTime};
   }
 }

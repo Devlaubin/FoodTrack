@@ -89,10 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.lunch_dining,
-                      size: 52,
-                      color: FoodtrackColors.rougeKetchup,
+                    child: Image.asset(
+                      'Markdown/ImgLogo/vrai logog/iubvizihvz87687.png',
+                      width: 52,
+                      height: 52,
+                      semanticLabel: 'FoodTrack',
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -205,8 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: ElevatedButton(
                                 onPressed: _handleLogin,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      FoodtrackColors.rougeKetchup,
+                                  backgroundColor: FoodtrackColors.rougeKetchup,
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(

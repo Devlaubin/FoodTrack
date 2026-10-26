@@ -4,6 +4,7 @@ import 'package:foodtruck_app/domain/foodtruck.dart';
 import 'package:foodtruck_app/services/foodtruck_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:foodtruck_app/utils/formatters.dart';
+import 'package:foodtruck_app/widgets/foodtruck_marker.dart';
 import 'package:foodtruck_app/widgets/star_rating.dart';
 import 'package:provider/provider.dart';
 
@@ -82,34 +83,7 @@ class _FoodtruckBottomSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Icon with colored background
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: foodtruck.isCurrentlyOpen
-                                ? _accentColor
-                                : FoodtrackColors.noirBrule.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: FoodtrackColors.noirBrule,
-                              width: 2.5,
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: FoodtrackColors.noirBrule,
-                                offset: Offset(3, 3),
-                                blurRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            foodtruck.logoIcon,
-                            size: 36,
-                            color: foodtruck.isCurrentlyOpen
-                                ? FoodtrackColors.cremeVintage
-                                : FoodtrackColors.noirBrule.withOpacity(0.4),
-                          ),
-                        ),
+                        FoodtruckMarkerIcon(foodtruck: foodtruck, size: 68),
                         const SizedBox(width: 16),
                         // Name and cuisine
                         Expanded(

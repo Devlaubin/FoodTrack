@@ -35,12 +35,14 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
+  google_nav_bar: ^5.0.7
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   provider: ^6.1.2
   geolocator: ^13.0.2
   supabase_flutter: ^2.8.4
   url_launcher: ^6.3.1
+  flutter_compass: 0.8.1
 
 dev_dependencies:
   flutter_test:
@@ -66,13 +68,14 @@ flutter:
 
   assets:
     - assets/Logo.png
+    - Markdown/ImgLogo/vrai logog/iubvizihvz87687.png
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/Logo.png"
+  image_path: "Markdown/ImgLogo/vrai logog/iubvizihvz87687.png"
   adaptive_icon_background: "#FDF6EC"
-  adaptive_icon_foreground: "assets/Logo.png"
+  adaptive_icon_foreground: "Markdown/ImgLogo/vrai logog/iubvizihvz87687.png"
   min_sdk_android: 21
   remove_alpha_ios: true
 

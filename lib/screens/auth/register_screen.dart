@@ -110,10 +110,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.lunch_dining,
-                      size: 52,
-                      color: FoodtrackColors.vertPickle,
+                    child: Image.asset(
+                      'Markdown/ImgLogo/vrai logog/iubvizihvz87687.png',
+                      width: 52,
+                      height: 52,
+                      semanticLabel: 'FoodTrack',
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -330,8 +331,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               child: ElevatedButton(
                                 onPressed: _handleRegister,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      FoodtrackColors.vertPickle,
+                                  backgroundColor: FoodtrackColors.vertPickle,
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(

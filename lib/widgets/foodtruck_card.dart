@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:foodtruck_app/domain/foodtruck.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:foodtruck_app/utils/formatters.dart';
+import 'package:foodtruck_app/widgets/foodtruck_marker.dart';
 
 class FoodtruckCard extends StatelessWidget {
   const FoodtruckCard({
@@ -13,29 +14,6 @@ class FoodtruckCard extends StatelessWidget {
   final FoodTruck foodtruck;
   final VoidCallback onTap;
 
-  Color get _cuisineColor {
-    switch (foodtruck.cuisineType?.toLowerCase()) {
-      case 'burger':
-        return FoodtrackColors.rougeKetchup;
-      case 'tacos':
-        return FoodtrackColors.vertPickle;
-      case 'pizza':
-        return FoodtrackColors.jauneMoutarde;
-      case 'french':
-        return FoodtrackColors.noirBrule;
-      case 'crepes':
-        return FoodtrackColors.jauneMoutarde;
-      case 'falafel':
-        return FoodtrackColors.vertPickle;
-      case 'asian':
-        return FoodtrackColors.rougeKetchup;
-      case 'bbq':
-        return FoodtrackColors.rougeKetchup;
-      default:
-        return FoodtrackColors.rougeKetchup;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -45,10 +23,7 @@ class FoodtruckCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: FoodtrackColors.noirBrule,
-            width: 3,
-          ),
+          border: Border.all(color: FoodtrackColors.noirBrule, width: 3),
           boxShadow: const [
             BoxShadow(
               color: FoodtrackColors.noirBrule,
@@ -61,27 +36,7 @@ class FoodtruckCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: foodtruck.isCurrentlyOpen
-                      ? _cuisineColor
-                      : FoodtrackColors.noirBrule.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: FoodtrackColors.noirBrule,
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  foodtruck.logoIcon,
-                  size: 32,
-                  color: foodtruck.isCurrentlyOpen
-                      ? FoodtrackColors.cremeVintage
-                      : FoodtrackColors.noirBrule.withOpacity(0.3),
-                ),
-              ),
+              FoodtruckMarkerIcon(foodtruck: foodtruck, size: 64),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -120,9 +75,7 @@ class FoodtruckCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: FoodtrackColors.noirBrule.withOpacity(
-                                0.5,
-                              ),
+                              color: FoodtrackColors.noirBrule.withOpacity(0.5),
                             ),
                           ),
                         ],
@@ -179,7 +132,9 @@ class FoodtruckCard extends StatelessWidget {
                                 size: 8,
                                 color: foodtruck.isCurrentlyOpen
                                     ? FoodtrackColors.cremeVintage
-                                    : FoodtrackColors.noirBrule.withOpacity(0.3),
+                                    : FoodtrackColors.noirBrule.withOpacity(
+                                        0.3,
+                                      ),
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -189,7 +144,9 @@ class FoodtruckCard extends StatelessWidget {
                                   fontWeight: FontWeight.w700,
                                   color: foodtruck.isCurrentlyOpen
                                       ? FoodtrackColors.cremeVintage
-                                      : FoodtrackColors.noirBrule.withOpacity(0.5),
+                                      : FoodtrackColors.noirBrule.withOpacity(
+                                          0.5,
+                                        ),
                                 ),
                               ),
                             ],

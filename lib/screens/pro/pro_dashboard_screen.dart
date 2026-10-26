@@ -6,6 +6,7 @@ import 'package:foodtruck_app/services/auth_service.dart';
 import 'package:foodtruck_app/services/pro_service.dart';
 import 'package:foodtruck_app/theme/colors.dart';
 import 'package:foodtruck_app/utils/formatters.dart';
+import 'package:foodtruck_app/widgets/foodtruck_marker.dart';
 import 'package:provider/provider.dart';
 
 class ProDashboardScreen extends StatefulWidget {
@@ -42,74 +43,88 @@ class _ProDashboardScreenState extends State<ProDashboardScreen>
     return Scaffold(
       backgroundColor: FoodtrackColors.cremeVintage,
       appBar: AppBar(title: const Text('Espace Pro')),
-      body: Consumer<ProService>(
-        builder: (context, pro, child) {
-          if (pro.isLoading && pro.myFoodtruck == null) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: FoodtrackColors.rougeKetchup,
-              ),
-            );
-          }
+      body: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.paddingOf(context).bottom + 96,
+        ),
+        child: Consumer<ProService>(
+          builder: (context, pro, child) {
+            if (pro.isLoading && pro.myFoodtruck == null) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: FoodtrackColors.rougeKetchup,
+                ),
+              );
+            }
 
-          if (pro.myFoodtruck == null) {
-            return const _CreateFoodtruckForm();
-          }
+            if (pro.myFoodtruck == null) {
+              return const _CreateFoodtruckForm();
+            }
 
-          return Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: FoodtrackColors.noirBrule,
-                      width: 2,
+            return Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: FoodtrackColors.noirBrule,
+                        width: 2,
+                      ),
                     ),
                   ),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: FoodtrackColors.rougeKetchup,
-                  unselectedLabelColor: FoodtrackColors.noirBrule,
-                  indicatorColor: FoodtrackColors.rougeKetchup,
-                  indicatorWeight: 3,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-                  tabs: const [
-                    Tab(text: 'INFOS & GPS'),
-                    Tab(text: 'MENU'),
-                    Tab(text: 'HORAIRES'),
-                    Tab(text: 'PROFIL'),
-                  ],
-                ),
-              ),
-              if (pro.error != null)
-                Container(
-                  width: double.infinity,
-                  color: FoodtrackColors.rougeKetchup.withOpacity(0.1),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    pro.error!,
-                    style: const TextStyle(color: FoodtrackColors.rougeKetchup),
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    labelColor: FoodtrackColors.rougeKetchup,
+                    unselectedLabelColor: FoodtrackColors.noirBrule,
+                    indicatorColor: FoodtrackColors.rougeKetchup,
+                    indicatorWeight: 3,
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                    tabs: const [
+                      Tab(icon: Icon(Icons.map_outlined), text: 'Fiche'),
+                      Tab(icon: Icon(Icons.restaurant_menu), text: 'Menu'),
+                      Tab(icon: Icon(Icons.schedule), text: 'Horaires'),
+                      Tab(
+                        icon: Icon(Icons.storefront_outlined),
+                        text: 'Profil',
+                      ),
+                    ],
                   ),
                 ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: const [
-                    _InfoAndGpsTab(),
-                    _MenuTab(),
-                    _HoursTab(),
-                    _ProfileTab(),
-                  ],
+                if (pro.error != null)
+                  Container(
+                    width: double.infinity,
+                    color: FoodtrackColors.rougeKetchup.withOpacity(0.1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      pro.error!,
+                      style: const TextStyle(
+                        color: FoodtrackColors.rougeKetchup,
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: const [
+                      _InfoAndGpsTab(),
+                      _MenuTab(),
+                      _HoursTab(),
+                      _ProfileTab(),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -246,7 +261,7 @@ class _CreateFoodtruckFormState extends State<_CreateFoodtruckForm> {
     }
   }
 
-Future<void> _submit() async {
+  Future<void> _submit() async {
     if (_nameController.text.trim().isEmpty) return;
 
     setState(() => _isSubmitting = true);
@@ -309,8 +324,8 @@ Future<void> _submit() async {
                       color: isCompleted
                           ? FoodtrackColors.vertPickle
                           : isActive
-                              ? FoodtrackColors.rougeKetchup
-                              : Colors.white,
+                          ? FoodtrackColors.rougeKetchup
+                          : Colors.white,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: FoodtrackColors.noirBrule,
@@ -469,10 +484,7 @@ Future<void> _submit() async {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: FoodtrackColors.noirBrule,
-                  width: 2,
-                ),
+                border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,9 +503,7 @@ Future<void> _submit() async {
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       labelText: 'Nom du foodtruck *',
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      labelStyle: const TextStyle(fontWeight: FontWeight.w600),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -506,7 +516,7 @@ Future<void> _submit() async {
                       ),
                     ),
                   ),
-const SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   _CuisineTypeDropdown(
                     selectedTypes: _selectedCuisineTypes,
                     onChanged: (types) {
@@ -528,10 +538,7 @@ const SizedBox(height: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: FoodtrackColors.noirBrule,
-              width: 2,
-            ),
+            border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
           ),
           child: _IconPicker(
             selectedIconId: _selectedIconId,
@@ -546,18 +553,18 @@ const SizedBox(height: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: FoodtrackColors.noirBrule,
-              width: 2,
-            ),
+            border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.check_circle,
-                      color: FoodtrackColors.vertPickle, size: 24),
+                  Icon(
+                    Icons.check_circle,
+                    color: FoodtrackColors.vertPickle,
+                    size: 24,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Resume de ta fiche',
@@ -572,7 +579,7 @@ const SizedBox(height: 12),
               const SizedBox(height: 16),
               _resumeRow('Nom', _nameController.text.trim()),
               const Divider(height: 20),
-_resumeRow(
+              _resumeRow(
                 'Type de cuisine',
                 _selectedCuisineTypes.isEmpty
                     ? 'Non specifie'
@@ -583,13 +590,13 @@ _resumeRow(
                 'Logo',
                 _selectedIconId != null
                     ? foodtruckIcons
-                        .firstWhere((f) => f.id == _selectedIconId)
-                        .label
+                          .firstWhere((f) => f.id == _selectedIconId)
+                          .label
                     : 'Aucun',
                 icon: _selectedIconId != null
                     ? foodtruckIcons
-                        .firstWhere((f) => f.id == _selectedIconId)
-                        .icon
+                          .firstWhere((f) => f.id == _selectedIconId)
+                          .icon
                     : null,
               ),
             ],
@@ -708,7 +715,10 @@ class _CuisineTypeDropdown extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const Divider(height: 1, color: FoodtrackColors.noirBrule),
+                            const Divider(
+                              height: 1,
+                              color: FoodtrackColors.noirBrule,
+                            ),
                             Expanded(
                               child: ListView(
                                 controller: scrollController,
@@ -718,7 +728,9 @@ class _CuisineTypeDropdown extends StatelessWidget {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: cuisineTypes.map((type) {
-                                      final isSelected = selectedTypes.contains(type);
+                                      final isSelected = selectedTypes.contains(
+                                        type,
+                                      );
                                       return GestureDetector(
                                         onTap: () {
                                           setSheetState(() {
@@ -734,7 +746,9 @@ class _CuisineTypeDropdown extends StatelessWidget {
                                             color: isSelected
                                                 ? FoodtrackColors.vertPickle
                                                 : Colors.white,
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             border: Border.all(
                                               color: FoodtrackColors.noirBrule,
                                               width: isSelected ? 3 : 2,
@@ -742,7 +756,8 @@ class _CuisineTypeDropdown extends StatelessWidget {
                                             boxShadow: isSelected
                                                 ? const [
                                                     BoxShadow(
-                                                      color: FoodtrackColors.noirBrule,
+                                                      color: FoodtrackColors
+                                                          .noirBrule,
                                                       offset: Offset(2, 2),
                                                       blurRadius: 0,
                                                     ),
@@ -756,7 +771,8 @@ class _CuisineTypeDropdown extends StatelessWidget {
                                                 const Icon(
                                                   Icons.check,
                                                   size: 16,
-                                                  color: FoodtrackColors.noirBrule,
+                                                  color:
+                                                      FoodtrackColors.noirBrule,
                                                 ),
                                                 const SizedBox(width: 6),
                                               ],
@@ -766,9 +782,11 @@ class _CuisineTypeDropdown extends StatelessWidget {
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w700,
                                                   color: isSelected
-                                                      ? FoodtrackColors.noirBrule
-                                                      : FoodtrackColors.noirBrule
-                                                          .withOpacity(0.7),
+                                                      ? FoodtrackColors
+                                                            .noirBrule
+                                                      : FoodtrackColors
+                                                            .noirBrule
+                                                            .withOpacity(0.7),
                                                 ),
                                               ),
                                             ],
@@ -789,9 +807,13 @@ class _CuisineTypeDropdown extends StatelessWidget {
                                     Navigator.pop(sheetContext);
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: FoodtrackColors.rougeKetchup,
-                                    foregroundColor: FoodtrackColors.cremeVintage,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    backgroundColor:
+                                        FoodtrackColors.rougeKetchup,
+                                    foregroundColor:
+                                        FoodtrackColors.cremeVintage,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
                                     ),
@@ -855,11 +877,17 @@ class _CuisineTypeDropdown extends StatelessWidget {
             runSpacing: 6,
             children: selectedTypes.map((type) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: FoodtrackColors.jauneMoutarde,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: FoodtrackColors.noirBrule, width: 2),
+                  border: Border.all(
+                    color: FoodtrackColors.noirBrule,
+                    width: 2,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -923,27 +951,7 @@ class _InfoAndGpsTabState extends State<_InfoAndGpsTab> {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: ft.isCurrentlyOpen
-                              ? FoodtrackColors.rougeKetchup
-                              : FoodtrackColors.noirBrule.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: FoodtrackColors.noirBrule,
-                            width: 2,
-                          ),
-                        ),
-                        child: Icon(
-                          ft.logoIcon,
-                          size: 24,
-                          color: ft.isCurrentlyOpen
-                              ? FoodtrackColors.cremeVintage
-                              : FoodtrackColors.noirBrule.withOpacity(0.3),
-                        ),
-                      ),
+                      FoodtruckMarkerIcon(foodtruck: ft, size: 48),
                       const SizedBox(width: 12),
                       Text(
                         ft.name,
@@ -969,12 +977,15 @@ class _InfoAndGpsTabState extends State<_InfoAndGpsTab> {
                         'Ouvert actuellement : ',
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      Switch(
-                        value: ft.isOpen,
-                        activeColor: FoodtrackColors.vertPickle,
-                        onChanged: (value) {
-                          pro.updateInfo(isOpen: value);
-                        },
+                      Semantics(
+                        label: 'Foodtruck ouvert actuellement',
+                        child: Switch(
+                          value: ft.isOpen,
+                          activeThumbColor: FoodtrackColors.vertPickle,
+                          onChanged: (value) {
+                            pro.updateInfo(isOpen: value);
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -1086,9 +1097,7 @@ class _ProfileTabState extends State<_ProfileTab> {
     if (_initialized) return;
     _bioController = TextEditingController(text: ft.bio ?? '');
     _phoneController = TextEditingController(text: ft.phone ?? '');
-    _serviceTypeController = TextEditingController(
-      text: ft.serviceType ?? '',
-    );
+    _serviceTypeController = TextEditingController(text: ft.serviceType ?? '');
     _instagramController = TextEditingController(
       text: ft.socialInstagram ?? '',
     );
@@ -1594,7 +1603,7 @@ class _MenuTab extends StatelessWidget {
                           ),
                           Switch(
                             value: item.isAvailable,
-                            activeColor: FoodtrackColors.vertPickle,
+                            activeThumbColor: FoodtrackColors.vertPickle,
                             onChanged: (value) {
                               context.read<ProService>().updateMenuItem(
                                 item.id,
@@ -1604,6 +1613,7 @@ class _MenuTab extends StatelessWidget {
                           ),
                           IconButton(
                             icon: const Icon(Icons.edit, size: 20),
+                            tooltip: 'Modifier ${item.name}',
                             onPressed: () => _showItemForm(context, item: item),
                           ),
                           IconButton(
@@ -1612,6 +1622,7 @@ class _MenuTab extends StatelessWidget {
                               color: FoodtrackColors.rougeKetchup,
                               size: 20,
                             ),
+                            tooltip: 'Supprimer ${item.name}',
                             onPressed: () {
                               context.read<ProService>().deleteMenuItem(
                                 item.id,
@@ -1624,6 +1635,7 @@ class _MenuTab extends StatelessWidget {
                   },
                 ),
           floatingActionButton: FloatingActionButton(
+            tooltip: 'Ajouter un article au menu',
             backgroundColor: FoodtrackColors.rougeKetchup,
             onPressed: () => _showItemForm(context),
             child: const Icon(Icons.add, color: FoodtrackColors.cremeVintage),

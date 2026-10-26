@@ -83,10 +83,11 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/Logo.png',
+              'Markdown/ImgLogo/vrai logog/iubvizihvz87687.png',
               width: 240,
               height: 240,
               fit: BoxFit.contain,
+              semanticLabel: 'FoodTrack',
             ),
             const SizedBox(height: 48),
             const SizedBox(
